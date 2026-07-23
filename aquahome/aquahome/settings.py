@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import cloudinary
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -37,10 +38,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'drf_yasg',
+    'aquahomeapp',
     'rest_framework',
+    'oauth2_provider',
+    'corsheaders',
+    'cloudinary_storage',
+    'cloudinary',
 ]
 
+
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -68,15 +77,29 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'aquahome.wsgi.application'
+import cloudinary.api
+cloudinary.config(
+  	cloud_name = "djaak4qi4",
+  	api_key = "183727698945658",
+  	api_secret = "N4Ttt_GpYTMssuXgDUj4DTJH9pg"
+)
 
-
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+AUTH_USER_MODEL = 'aquahomeapp.User'
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+    'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+    )
+}
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'aquahomedb',
+        'USER': 'root',
+        'PASSWORD': 'admin@123',
     }
 }
 
@@ -121,3 +144,10 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+CLIENT_ID = 'TUdyOoZBo1F4GaiTtCzUlAbWVWd1Rhi8paq2dXSU'
+CLIENT_SECRET = '4owb63fCSluxcQTNBCgsGKDQ3cDJcK53dslkZxDvNcHMmlj9y9PfN48UcSNwKx2nW0AUd6sb7FNT2Ahxy4FH4nVpOJNjjmiXWaHji04F0HWkC5NrdB7VCfOT5r5Z9Fho'
+
+#pbkdf2_sha256$1000000$FiyxLrxZxCqjHR14sh1gzu$RRlz8259+dvtH3dhXGqFfSAEil5ReuU+jY6DBfOw700=
