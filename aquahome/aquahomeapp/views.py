@@ -1,11 +1,12 @@
 from django.shortcuts import render
 from django.db import models
 from aquahomeapp import serializers
-from aquahomeapp.models import Product, Category, User
+from aquahomeapp.models import Product, Category, User, Order
 from rest_framework import viewsets, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.exceptions import PermissionDenied
 
 from .perms import *
 
@@ -75,5 +76,48 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(is_active=True)
+
+class OrderViewSet(viewsets.ModelViewSet):
+    def is_admin_or_staff(self, user):
+        return getattr(user, 'role', '') in ('ADMIN', 'STAFF') or user.is_staff or user.is_superuser
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsCustomerOnly()]
+        return [IsAdminOrStaffOrOwner()]
+
+    def get_queryset(self):
+        user = self.request.user
+        if self.is_admin_or_staff(user):
+            return Order.objects.all()
+        return Order.objects.filter(customer=user)
+
+    def get_serializer_class(self):
+        if self.action in ['update', 'partial_update']:
+            if self.request.user.is_staff or self.request.user.is_superuser:
+                return serializers.OrderStatusUpdateSerializer
+            return serializers.OrderUpdateSerializer
+        if self.action == 'create':
+            return serializers.OrderCreateSerializer
+        if self.action == 'list':
+            return serializers.OrderListSerializer
+        if self.action == 'retrieve':
+            return serializers.OrderDetailSerializer
+        return serializers.OrderListSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(customer=self.request.user)
+
+    def perform_update(self, serializer):
+        order = self.get_object()
+        user = self.request.user
+        if user == order.customer:
+            if order.status != Order.StatusChoices.PENDING:
+                raise PermissionDenied("Đơn hàng đang được chuẩn bị, không thể chỉnh sửa")
+            serializer.save()
+        elif (user.is_superuser or user.is_staff):
+            serializer.save()
+        else:
+            raise PermissionDenied("Bạn không có quyền chỉnh sửa đơn hàng này.")
+
 
 
