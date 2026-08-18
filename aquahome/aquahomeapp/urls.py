@@ -9,6 +9,5 @@ r.register(r'product', views.ProductViewSet)
 r.register(r'users', views.UserViewSet, basename='users')
 r.register(r'orders', views.OrderViewSet, basename='orders')
 urlpatterns = [
-    path('admin/', admin.site.urls),
     path('', include(r.urls))
 ]
