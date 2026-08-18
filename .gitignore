@@ -219,3 +219,4 @@ __marimo__/
 
 # Ignore CSV data files
 crawl_scripts/*.csv
+
