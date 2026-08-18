@@ -121,7 +121,7 @@ class OrderStatusUpdateSerializer(serializers.ModelSerializer):
         order = self.instance
         current_status = order.status
 
-        if current_status in [Order.StatusChoices.DELIVERED, Order.StatusChoices.CANCELLED]:
+        if current_status in [Order.StatusChoices.CANCELLED]:
             raise serializers.ValidationError(f"Đơn hàng đã ở trạng thái '{current_status}', không thể thay đổi thêm.")
         valid_transitions = {
             Order.StatusChoices.PENDING: [Order.StatusChoices.PROCESSING, Order.StatusChoices.CANCELLED],

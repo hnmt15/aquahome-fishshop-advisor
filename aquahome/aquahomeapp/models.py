@@ -1,13 +1,8 @@
 from wsgiref import validate
-
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from cloudinary.models import CloudinaryField
-# Create your models here
-# User (Người dùng) (id, username, password, full_name, email, phone, avatar, role, is_active, created_at)
-# Category (Danh mục) (id, name, description).
-# Product (Sản phẩm) (id, category_id, species_id, name, description, price, stock_quantity, image, created_at)
-
+from django.core.validators import MinValueValidator
 
 class User(AbstractUser):
     class RoleChoices(models.TextChoices):
@@ -30,27 +25,83 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
+class Species(BaseModel):
+    name_vn= models.CharField(max_length=100)
+    scientific_name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
+    min_temp = models.FloatField()
+    max_temp = models.FloatField()
+    min_ph = models.FloatField()
+    max_ph = models.FloatField()
+    max_length = models.FloatField()
+    min_tank_size = models.FloatField()
+
+    def __str__(self):
+        return f"{self.scientific_name} - [{self.name_vn}]"
+
 class Category(BaseModel):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     description = models.TextField(null=True, blank=True)
     def __str__(self):
         return self.name
 
-class Product(BaseModel):
-    name = models.CharField(max_length=100)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    quantity = models.IntegerField()
-    image = CloudinaryField(null=True)
-    description = models.TextField(blank=True)
-    is_active = models.BooleanField(default=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
 
+class Feature(BaseModel):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
 
     def __str__(self):
         return self.name
 
-#Order (Đơn hàng) (id, user_id, customer_name, customer_phone, customer_address, status, total_amount, created_at).
-#Order_Item (Chi tiết đơn hàng) (id, order_id, product_id, quantity, unit_price).
+
+class SpeciesFeature(BaseModel):
+    species = models.ForeignKey(Species, on_delete=models.CASCADE, related_name="features")
+    feature = models.ForeignKey(Feature, on_delete=models.CASCADE, related_name="species")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["species", "feature"],
+                name="unique_species_feature"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.species.name_vn} - {self.feature.name}"
+
+
+
+class Product(BaseModel):
+    name = models.CharField(max_length=100)
+    price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
+    quantity = models.IntegerField(validators=[MinValueValidator(0)])
+    image = CloudinaryField(null=True)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    species = models.ForeignKey(Species, null=True, blank=True, on_delete=models.SET_NULL, related_name="products")
+
+    def __str__(self):
+        return self.name
+
+class ProductRecommendation(BaseModel):
+    species = models.ForeignKey(Species, on_delete=models.CASCADE, related_name="recommendations")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="species_recommendations")
+    reason = models.CharField(max_length=1000, blank=True)
+    priority = models.IntegerField(default=0)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["species", "product"],
+                name="unique_species_product_recommendation"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.species.name_vn} - {self.product.name}"
+
+
 class Order(BaseModel):
     class StatusChoices(models.TextChoices):
         PENDING = "PENDING"
