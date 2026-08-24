@@ -1,0 +1,197 @@
+.ah-login {
+  --abyss: #052C43;
+  --ocean: #0B6E99;
+  --ocean-light: #1791C4;
+  --seafoam: #3FCDB8;
+  --foam: #F2FAFA;
+  --white: #FFFFFF;
+  --ink: #0A2A38;
+  --ink-soft: #4C7182;
+
+  font-family: Arial, sans-serif;
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Bìa */
+.ah-tank {
+  background: #66CCFF;
+  padding: 30px;
+}
+
+.ah-brand {
+  align-items: center;
+  gap: 10px;
+  color: var(--white);
+}
+
+.ah-brand-mark {
+  width: 35px;
+  height: 30px;
+  border-radius: 10px;
+  background: var(--white);
+  align-items: center;
+  justify-content: center;
+
+  font-weight: 600;
+  color: var(--abyss);
+}
+
+.ah-brand-name {
+  font-weight: 600;
+  font-size: 20px;
+}
+
+/* Form */
+.ah-surface {
+  background: var(--foam);
+  min-height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 40px;
+  box-sizing: border-box;
+}
+
+.ah-card {
+  width: 380px;
+  max-width: 100%;
+  padding: 30px;
+
+  background: var(--white);
+  border-radius: 10px;
+  box-sizing: border-box;
+}
+
+.ah-card h2 {
+  font-weight: 600;
+  font-size: 28px;
+  margin: 0 0 6px;
+  color: var(--abyss);
+}
+
+.ah-sub {
+  font-size: 14px;
+  color: var(--ink-soft);
+  margin: 0 0 28px;
+}
+
+.ah-sub a {
+  color: var(--ocean);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.ah-sub a:hover {
+  text-decoration: underline;
+}
+
+/* Input */
+.ah-field {
+  margin-bottom: 18px;
+}
+
+.ah-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 6px;
+  text-align: left;
+}
+
+.ah-field input {
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 12px 14px;
+
+  border-radius: 10px;
+  border: 1.5px solid #D9EAEE;
+
+  background: var(--white);
+
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--ink);
+}
+
+.ah-field input:focus {
+  outline: none;
+  border-color: var(--ocean);
+}
+
+/* Password */
+.ah-pw-row {
+  position: relative;
+}
+
+.ah-pw-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  background: none;
+  border: none;
+
+  color: var(--ocean);
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+/* Error */
+.ah-error {
+  background: #FDEEEE;
+  color: #B3261E;
+
+  font-size: 13px;
+
+  padding: 10px 12px;
+  border-radius: 8px;
+
+  margin-bottom: 16px;
+}
+
+/* Button */
+.ah-submit {
+  width: 100%;
+
+  padding: 13px;
+
+  border-radius: 10px;
+  border: none;
+
+  background: var(--ocean);
+
+  color: var(--white);
+
+  font-size: 15px;
+  font-weight: 700;
+
+  font-family: inherit;
+
+  cursor: pointer;
+}
+
+.ah-submit:hover {
+  background: var(--ocean-light);
+}
+
+/* Footer */
+.ah-footer-note {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+
+  text-align: center;
+
+  margin-top: 20px;
+}

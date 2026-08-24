@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'drf_yasg',
     'aquahomeapp',
+    'advisory',
     'rest_framework',
     'oauth2_provider',
     'corsheaders',
