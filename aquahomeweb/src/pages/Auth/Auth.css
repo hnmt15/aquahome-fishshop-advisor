@@ -1,3 +1,4 @@
+.ah-login,
 .ah-register {
   --abyss: #052C43;
   --ocean: #0B6E99;
@@ -8,17 +9,17 @@
   --ink: #0A2A38;
   --ink-soft: #4C7182;
 
-  font-family: Arial, sans-serif;;
+  font-family: Arial, sans-serif;
   color: var(--ink);
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-
 }
 
+/* Bìa */
 .ah-tank {
-   background: #66CCFF;
+  background: #66CCFF;
   padding: 30px;
 }
 
@@ -26,37 +27,49 @@
   align-items: center;
   gap: 10px;
   color: var(--white);
+  margin-bottom: 15px;
 }
+
 .ah-brand-mark {
-  width: 35px; height: 30px;
+  width: 35px;
+  height: 30px;
   border-radius: 10px;
   background: var(--white);
-  align-items: center; justify-content: center;
-  display: inline-block;
+  align-items: center;
+  justify-content: center;
   font-family: 'Fraunces', serif;
+  font-size: 30px;
   font-weight: 600;
   color: var(--abyss);
-  margin-bottom: 10px;
 }
+
 .ah-brand-name {
   font-family: 'Fraunces', serif;
   font-weight: 600;
-  font-size: 20px;
+  font-size: 30px;
   letter-spacing: 0.01em;
 }
 
+/* Form */
 .ah-surface {
-  background: var(--foam);
+  background: var(--white);
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 40px;
+  box-sizing: border-box;
+  border-radius: 10px;
+
 }
 
 .ah-card {
-  width: 100%;
-  max-width: 380px;
+  width: 380px;
+  max-width: 100%;
+  border-radius: 10px;
+  box-sizing: border-box;
 }
+
 .ah-card h2 {
   font-family: 'Fraunces', serif;
   font-weight: 600;
@@ -64,14 +77,16 @@
   margin: 0 0 6px;
   color: var(--abyss);
 }
-.ah-card .ah-sub {
+
+.ah-sub {
   font-size: 14px;
   color: var(--ink-soft);
   margin: 0 0 28px;
 }
-.ah-card .ah-sub a { color: var(--ocean); font-weight: 600; text-decoration: none; }
-.ah-card .ah-sub a:hover { text-decoration: underline; }
+.ah-sub a { color: var(--ocean); font-weight: 600; text-decoration: none; }
+.ah-sub a:hover { text-decoration: underline; }
 
+/* Input */
 .ah-field { margin-bottom: 18px; }
 .ah-field label {
   display: block;
@@ -79,7 +94,7 @@
   font-weight: 600;
   color: var(--ink);
   margin-bottom: 6px;
- text-align: left;
+  text-align: left;
 }
 .ah-field input {
   width: 100%;
@@ -100,6 +115,7 @@
   box-shadow: 0 0 0 3px rgba(11, 110, 153, 0.15);
 }
 
+/* Password */
 .ah-pw-row { position: relative; }
 .ah-pw-toggle {
   position: absolute;
@@ -114,8 +130,13 @@
   cursor: pointer;
   padding: 4px;
 }
-.ah-pw-toggle:focus-visible { outline: 2px solid var(--ocean); outline-offset: 2px; border-radius: 4px; }
+.ah-pw-toggle:focus-visible {
+  outline: 2px solid var(--ocean);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
 
+/* Error */
 .ah-error {
   background: #FDEEEE;
   color: #B3261E;
@@ -130,49 +151,22 @@
   padding: 13px;
   border-radius: 10px;
   border: none;
-  background: linear-gradient(135deg, var(--ocean-light), var(--ocean));
+  background: var(--ocean);
   color: var(--white);
   font-size: 15px;
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
-  margin-top: 6px;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
-  box-shadow: 0 6px 16px rgba(11, 110, 153, 0.28);
-}
-.ah-submit:hover { transform: translateY(-1px); }
-.ah-submit:focus-visible { outline: 3px solid var(--seafoam); outline-offset: 2px; }
-.ah-submit:active { transform: translateY(0); }
-
-.ah-divider {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 22px 0;
-  color: #9FB6C0;
-  font-size: 12px;
-}
-.ah-divider::before, .ah-divider::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: #D9EAEE;
 }
 
+.ah-submit:hover {
+  background: var(--ocean-light);
+}
 .ah-footer-note {
   font-size: 12.5px;
   color: var(--ink-soft);
+
   text-align: center;
-  margin-top: 4px;
+
+  margin-top: 20px;
 }
-
-@media (max-width: 860px) {
-  .ah-register { grid-template-columns: 1fr; }
-  .ah-tank { padding: 32px 28px 0; min-height: 240px; }
-  .ah-tank-copy { margin-bottom: 40px; }
-  .ah-tank-copy h1 { font-size: 28px; }
-  .ah-tank-copy p { display: none; }
-  .ah-surface { padding: 32px 24px 48px; }
-}
-
-

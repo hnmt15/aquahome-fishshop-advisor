@@ -1,0 +1,390 @@
+.home {
+  --dark: #062B45;
+  --dark-light: #0B405D;
+  --cyan: #5EDDE2;
+  --cyan-dark: #27BBC4;
+  --light: #F2FAFA;
+  --white: #FFFFFF;
+  --text: #244653;
+  --gray: #6F858C;
+
+  font-family: Arial, sans-serif;
+  color: var(--text);
+  background: var(--white);
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.home-header {
+  height: 72px;
+  padding: 0 50px;
+
+  display: flex;
+  align-items: center;
+  gap: 45px;
+
+  background: white;
+
+  box-sizing: border-box;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  color: var(--cyan-dark);
+
+  font-size: 25px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.logo-icon {
+  font-size: 25px;
+}
+
+.home-header nav {
+  display: flex;
+  gap: 28px;
+  flex: 1;
+}
+
+.home-header nav a {
+  color: #666;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.home-header nav a:hover {
+  color: var(--cyan-dark);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.search {
+  display: flex;
+  height: 42px;
+}
+
+.search input {
+  width: 230px;
+
+  padding: 0 14px;
+
+  border: 1px solid #ddd;
+  border-radius: 5px 0 0 5px;
+
+  font-size: 14px;
+}
+
+.search button {
+  width: 48px;
+
+  border: none;
+  border-radius: 0 5px 5px 0;
+
+  background: #09A329;
+  color: white;
+
+  cursor: pointer;
+}
+
+.header-icon {
+  text-decoration: none;
+  font-size: 20px;
+}
+
+.login-button {
+  padding: 9px 15px;
+
+  border-radius: 5px;
+
+  background: var(--dark);
+  color: white;
+
+  text-decoration: none;
+  font-size: 14px;
+}
+
+
+/* =========================
+   HERO
+========================= */
+
+.hero {
+  min-height: 540px;
+
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  background:
+    linear-gradient(
+      rgba(3, 30, 55, 0.45),
+      rgba(3, 30, 55, 0.6)
+    ),
+    url("/images/aquarium.jpg");
+
+  background-size: cover;
+  background-position: center;
+}
+
+.hero-content {
+  position: relative;
+
+  margin-left: 10%;
+
+  color: white;
+}
+
+.hero-small {
+  color: var(--cyan);
+  font-size: 16px;
+  font-weight: bold;
+  letter-spacing: 4px;
+}
+
+.hero h1 {
+  font-size: 52px;
+  line-height: 1.1;
+  margin: 15px 0;
+}
+
+.hero-description {
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.btn-primary,
+.btn-outline {
+  padding: 13px 24px;
+
+  border-radius: 6px;
+
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.btn-primary {
+  border: none;
+  background: var(--cyan);
+  color: var(--dark);
+  font-weight: bold;
+}
+
+.btn-outline {
+  border: 1px solid white;
+  background: transparent;
+  color: white;
+}
+
+
+/* =========================
+   SECTION
+========================= */
+
+.section {
+  padding: 60px 8%;
+}
+
+.section-title {
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.section-title p {
+  color: var(--cyan-dark);
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+.section-title h2 {
+  margin: 8px 0;
+
+  color: var(--dark);
+
+  font-size: 30px;
+}
+
+
+/* =========================
+   CATEGORY
+========================= */
+
+.categories {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.category-card {
+  padding: 28px;
+
+  text-align: center;
+
+  border: 1px solid #E1EEEE;
+  border-radius: 10px;
+
+  background: white;
+}
+
+.category-card:hover {
+  border-color: var(--cyan);
+}
+
+.category-icon {
+  font-size: 40px;
+}
+
+.category-card h3 {
+  margin: 12px 0 6px;
+
+  color: var(--dark);
+}
+
+.category-card p {
+  margin: 0;
+
+  color: var(--gray);
+  font-size: 14px;
+}
+
+
+/* =========================
+   PRODUCTS
+========================= */
+
+.products-section {
+  background: var(--light);
+}
+
+.products {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.product-card {
+  background: white;
+
+  border-radius: 10px;
+
+  overflow: hidden;
+}
+
+.product-image {
+  height: 210px;
+
+  background: #E8F7F7;
+}
+
+.product-image img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+.product-info {
+  padding: 18px;
+}
+
+.product-info h3 {
+  margin: 0 0 8px;
+
+  color: var(--dark);
+}
+
+.price {
+  color: var(--cyan-dark);
+  font-size: 17px;
+  font-weight: bold;
+}
+
+.product-info button {
+  width: 100%;
+
+  padding: 10px;
+
+  border: 1px solid var(--cyan-dark);
+  border-radius: 5px;
+
+  background: white;
+  color: var(--cyan-dark);
+
+  cursor: pointer;
+}
+
+
+/* =========================
+   CONSULTATION
+========================= */
+
+.consultation {
+  min-height: 300px;
+
+  padding: 50px 12%;
+
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background: var(--dark);
+
+  color: white;
+}
+
+.consultation-content p:first-child {
+  color: var(--cyan);
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+.consultation h2 {
+  font-size: 36px;
+  line-height: 1.2;
+}
+
+.consultation-description {
+  color: #C5DDE3;
+  line-height: 1.6;
+}
+
+.btn-consultation {
+  margin-top: 15px;
+
+  padding: 12px 25px;
+
+  border: none;
+  border-radius: 5px;
+
+  background: var(--cyan);
+  color: var(--dark);
+
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.consultation-fish {
+  font-size: 130px;
+}

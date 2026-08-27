@@ -1,45 +1,35 @@
 import React, { useState } from "react";
-import "./styles/Login.css";
+import "./Auth.css";
 
 export default function LoginPage() {
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
-
+  const [form, setForm] = useState({ email: "", password: "" });
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
 
   const handleChange = (e) =>
-    setForm((f) => ({
-      ...f,
-      [e.target.name]: e.target.value,
-    }));
+    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     setError("");
-
     console.log("login payload", form);
   };
 
   return (
     <div className="ah-login">
-
-      {/* Bìa */}
       <div className="ah-tank">
         <div className="ah-brand">
           <span className="ah-brand-mark">A</span>
           <span className="ah-brand-name">quaHome</span>
-          <div className="ah-surface">
-        <form className="ah-card" onSubmit={handleSubmit} noValidate>
+        </div>
 
+
+      <div className="ah-surface">
+        <form className="ah-card" onSubmit={handleSubmit} noValidate>
           <h2>Đăng nhập</h2>
 
           <p className="ah-sub">
-            Chưa có tài khoản?{" "}
-            <a href="/register">Đăng ký</a>
+            Chưa có tài khoản? <a href="/register">Đăng ký</a>
           </p>
 
           {error && <div className="ah-error">{error}</div>}
@@ -59,7 +49,6 @@ export default function LoginPage() {
 
           <div className="ah-field">
             <label htmlFor="password">Mật khẩu</label>
-
             <div className="ah-pw-row">
               <input
                 id="password"
@@ -70,7 +59,6 @@ export default function LoginPage() {
                 onChange={handleChange}
                 required
               />
-
               <button
                 type="button"
                 className="ah-pw-toggle"
@@ -85,19 +73,14 @@ export default function LoginPage() {
             Đăng nhập
           </button>
 
+
           <p className="ah-footer-note">
             Bằng việc đăng nhập, bạn đồng ý với Điều khoản dịch vụ và Chính
             sách bảo mật của AquaHome.
           </p>
-
         </form>
-        </div>
       </div>
-
-      {/* Form đăng nhập */}
-
       </div>
-
     </div>
   );
 }

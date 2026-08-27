@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import './styles/Register.css'
+import "./Auth.css";
 
 export default function RegisterPage() {
   const [form, setForm] = useState({
@@ -17,7 +17,7 @@ export default function RegisterPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (form.password !== form.confirm) {
-      setError("Mật khẩu không khớp.");
+      setError("Mật khẩu xác nhận không khớp.");
       return;
     }
     setError("");
@@ -26,19 +26,23 @@ export default function RegisterPage() {
 
   return (
     <div className="ah-register">
-
-      {/* bìa */}
       <div className="ah-tank">
         <div className="ah-brand">
           <span className="ah-brand-mark">A</span>
           <span className="ah-brand-name">quaHome</span>
-          <div className="ah-surface">
+        </div>
+
+
+      <div className="ah-surface">
         <form className="ah-card" onSubmit={handleSubmit} noValidate>
           <h2>Tạo tài khoản</h2>
+
           <p className="ah-sub">
             Đã có tài khoản? <a href="/login">Đăng nhập</a>
           </p>
+
           {error && <div className="ah-error">{error}</div>}
+
           <div className="ah-field">
             <label htmlFor="name">Họ và tên</label>
             <input
@@ -105,21 +109,13 @@ export default function RegisterPage() {
             Đăng ký
           </button>
 
-          <div className="ah-divider"></div>
 
           <p className="ah-footer-note">
             Bằng việc đăng ký, bạn đồng ý với Điều khoản dịch vụ và Chính
             sách bảo mật của AquaHome.
           </p>
-           </form>
-        </div>
-        <div className="ah-tank-copy">
-        </div>
+        </form>
       </div>
-
-      {/* nd */}
-
-
       </div>
     </div>
   );
