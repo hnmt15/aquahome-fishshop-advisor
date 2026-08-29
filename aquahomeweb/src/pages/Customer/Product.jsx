@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import "./Customer.css";
-
-const API_URL = "http://localhost:8000/api";
+import api from "../../api/api";
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -18,49 +17,45 @@ export default function Products() {
 
   const navigate = useNavigate();
 
-  // Lấy sản phẩm
   useEffect(() => {
-    fetch(`${API_URL}/product/`)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Không thể lấy danh sách sản phẩm");
-        }
+    const fetchProducts = async () => {
+      try {
+        const response = await api.get("product/");
+        console.log("PRODUCT RESPONSE:", response);
+        console.log("PRODUCT DATA:", response.data);
+        const data = response.data;
 
-        return response.json();
-      })
-      .then((data) => {
-        // Nếu sau này API có pagination
-        if (Array.isArray(data)) {
-          setProducts(data);
-        } else {
-          setProducts(data.results || []);
-        }
+        setProducts(
+          Array.isArray(data) ? data : data.results || []
+        );
+      } catch (err) {console.error("STATUS:", err.response?.status);
+        console.error("DATA:", err.response?.data);
+        console.error("Lỗi lấy sản phẩm:", err);
+        setError("Không thể lấy danh sách sản phẩm.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
+    fetchProducts();
+  }, []);
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await api.get("category/");
+        const data = response.data;
+
+        setCategories(
+          Array.isArray(data) ? data : data.results || []
+        );
+      } catch (err) {
+        console.error("Lỗi lấy category:", err);
+      }
+    };
+
+    fetchCategories();
   }, []);
 
-  // Lấy category
-  useEffect(() => {
-    fetch(`${API_URL}/category/`)
-      .then((response) => response.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setCategories(data);
-        } else {
-          setCategories(data.results || []);
-        }
-      })
-      .catch(() => {
-        console.log("Không thể lấy category");
-      });
-  }, []);
-
-  // Filter
   const filteredProducts = products.filter((product) => {
     const matchSearch = product.name
       .toLowerCase()
@@ -68,8 +63,7 @@ export default function Products() {
 
     const matchCategory =
       category === "" ||
-      String(product.category) === String(category) ||
-      product.category_name === category;
+      String(product.category) === String(category);
 
     return matchSearch && matchCategory;
   });
@@ -89,7 +83,6 @@ export default function Products() {
           </p>
         </section>
 
-
         {/* Filter */}
         <section className="products-filter">
 
@@ -104,10 +97,15 @@ export default function Products() {
             value={category}
             onChange={(e) => setCategory(e.target.value)}
           >
-            <option value="">Tất cả danh mục</option>
+            <option value="">
+              Tất cả danh mục
+            </option>
 
             {categories.map((item) => (
-              <option key={item.id} value={item.id}>
+              <option
+                key={item.id}
+                value={item.id}
+              >
                 {item.name}
               </option>
             ))}
@@ -115,20 +113,19 @@ export default function Products() {
 
         </section>
 
-
-        {/* Content */}
+        {/* Loading */}
         {loading && (
           <div className="products-message">
             Đang tải sản phẩm...
           </div>
         )}
 
+        {/* Error */}
         {error && (
           <div className="products-error">
             {error}
           </div>
         )}
-
 
         {!loading && !error && (
           <section className="product-grid">
@@ -142,6 +139,7 @@ export default function Products() {
                 }
               >
 
+                {/* Image */}
                 <div className="product-image">
 
                   {product.image ? (
@@ -157,14 +155,12 @@ export default function Products() {
 
                 </div>
 
-
+                {/* Information */}
                 <div className="product-info">
 
-                  <span className="product-category">
-                    {product.category_name || "Sản phẩm"}
-                  </span>
-
-                  <h3>{product.name}</h3>
+                  <h3>
+                    {product.name}
+                  </h3>
 
                   <div className="product-bottom">
 
@@ -194,7 +190,6 @@ export default function Products() {
           </section>
         )}
 
-
         {!loading &&
           !error &&
           filteredProducts.length === 0 && (
@@ -202,7 +197,6 @@ export default function Products() {
               Không tìm thấy sản phẩm phù hợp.
             </div>
           )}
-
       </main>
 
       <Footer />

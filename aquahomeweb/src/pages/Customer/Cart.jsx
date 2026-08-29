@@ -15,16 +15,19 @@ export default function Cart() {
   }, []);
 
   const updateCart = (id, quantity) => {
-    if (quantity < 1) return;
+      if (quantity < 1) return;
 
-    const newCart = cart.map((item) =>
-      item.id === id
-        ? { ...item, quantity }
-        : item
-    );
+      const newCart = cart.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              quantity: Math.min(quantity, item.stock),
+            }
+          : item
+      );
 
-    setCart(newCart);
-    localStorage.setItem("cart", JSON.stringify(newCart));
+      setCart(newCart);
+      localStorage.setItem("cart", JSON.stringify(newCart));
   };
 
   const removeItem = (id) => {
@@ -106,11 +109,11 @@ export default function Cart() {
                           onClick={() =>
                             updateCart(
                               item.id,
-                              item.quantity - 1
+                              item.quantity + 1
                             )
                           }
-                        >
-                          −
+                          disabled={item.quantity >= item.stock}>
+                          +
                         </button>
 
                         <span>{item.quantity}</span>

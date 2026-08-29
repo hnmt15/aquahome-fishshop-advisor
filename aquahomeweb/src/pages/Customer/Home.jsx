@@ -1,62 +1,74 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Home.css";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import api from "../../api/api";
 
 export default function HomePage() {
-  const categories = [
-    {
-      name: "Cá cảnh",
-      icon: "🐟",
-      description: "Các loài cá cảnh",
-    },
-    {
-      name: "Bể cá",
-      icon: "🏠",
-      description: "Bể và hồ cá",
-    },
-    {
-      name: "Phụ kiện",
-      icon: "💧",
-      description: "Thiết bị thủy sinh",
-    },
-    {
-      name: "Thức ăn",
-      icon: "🪱",
-      description: "Thức ăn cho cá",
-    },
-  ];
+  const navigate = useNavigate();
 
-  const products = [
-    {
-      name: "Cá Betta",
-      price: "50.000đ",
-      image: "/images/betta.jpg",
-    },
-    {
-      name: "Cá Guppy",
-      price: "30.000đ",
-      image: "/images/guppy.jpg",
-    },
-    {
-      name: "Cá Neon",
-      price: "20.000đ",
-      image: "/images/neon.jpg",
-    },
-    {
-      name: "Cá Molly",
-      price: "25.000đ",
-      image: "/images/molly.jpg",
-    },
-  ];
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+
+  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+
+  // =========================
+  // LẤY SẢN PHẨM
+  // =========================
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await api.get("product/");
+        const data = response.data;
+
+        setProducts(
+          Array.isArray(data) ? data : data.results || []
+        );
+      } catch (err) {
+        console.error("Lỗi lấy sản phẩm:", err);
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // =========================
+  // LẤY CATEGORY
+  // =========================
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await api.get("category/");
+        const data = response.data;
+
+        setCategories(
+          Array.isArray(data) ? data : data.results || []
+        );
+      } catch (err) {
+        console.error("Lỗi lấy category:", err);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  // Chỉ hiển thị một số sản phẩm trên trang Home
+  const featuredProducts = products.slice(0, 4);
 
   return (
     <div className="home">
 
       <Header />
 
-
-      {/* HERO */}
+      {/* =========================
+          HERO
+      ========================= */}
       <section className="hero">
 
         <div className="hero-overlay"></div>
@@ -80,13 +92,21 @@ export default function HomePage() {
           </p>
 
           <div className="hero-buttons">
-            <button className="btn-primary">
+
+            <button
+              className="btn-primary"
+              onClick={() => navigate("/products")}
+            >
               Khám phá sản phẩm
             </button>
 
-            <button className="btn-outline">
+            <button
+              className="btn-outline"
+              onClick={() => navigate("/consultation")}
+            >
               Tư vấn cho tôi
             </button>
+
           </div>
 
         </div>
@@ -94,7 +114,9 @@ export default function HomePage() {
       </section>
 
 
-      {/* CATEGORY */}
+      {/* =========================
+          CATEGORY
+      ========================= */}
       <section className="section">
 
         <div className="section-title">
@@ -102,75 +124,164 @@ export default function HomePage() {
           <h2>Danh mục sản phẩm</h2>
         </div>
 
-        <div className="categories">
+        {loadingCategories ? (
+          <div className="home-message">
+            Đang tải danh mục...
+          </div>
+        ) : (
 
-          {categories.map((category) => (
-            <div className="category-card" key={category.name}>
+          <div className="categories">
 
-              <div className="category-icon">
-                {category.icon}
+            {categories.map((category) => (
+
+              <div
+                className="category-card"
+                key={category.id}
+                onClick={() =>
+                  navigate(`/products?category=${category.id}`)
+                }
+              >
+
+                <div className="category-icon">
+                  🐟
+                </div>
+
+                <h3>
+                  {category.name}
+                </h3>
+
+                <p>
+                  Khám phá sản phẩm
+                </p>
+
               </div>
 
-              <h3>{category.name}</h3>
+            ))}
 
-              <p>{category.description}</p>
+          </div>
 
-            </div>
-          ))}
-
-        </div>
+        )}
 
       </section>
 
 
-      {/* FEATURED PRODUCTS */}
+      {/* =========================
+          FEATURED PRODUCTS
+      ========================= */}
       <section className="section products-section">
 
         <div className="section-title">
+
           <p>SẢN PHẨM</p>
+
           <h2>Sản phẩm nổi bật</h2>
-        </div>
-
-        <div className="products">
-
-          {products.map((product) => (
-            <div className="product-card" key={product.name}>
-
-              <div className="product-image">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                />
-              </div>
-
-              <div className="product-info">
-
-                <h3>{product.name}</h3>
-
-                <p className="price">
-                  {product.price}
-                </p>
-
-                <button>
-                  Xem sản phẩm
-                </button>
-
-              </div>
-
-            </div>
-          ))}
 
         </div>
+
+        {loadingProducts ? (
+
+          <div className="home-message">
+            Đang tải sản phẩm...
+          </div>
+
+        ) : featuredProducts.length === 0 ? (
+
+          <div className="home-message">
+            Chưa có sản phẩm.
+          </div>
+
+        ) : (
+
+          <div className="products">
+
+            {featuredProducts.map((product) => (
+
+              <div
+                className="product-card"
+                key={product.id}
+                onClick={() =>
+                  navigate(`/products/${product.id}`)
+                }
+              >
+
+                <div className="product-image">
+
+                  {product.image ? (
+
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                    />
+
+                  ) : (
+
+                    <div className="no-image">
+                      Không có ảnh
+                    </div>
+
+                  )}
+
+                </div>
+
+
+                <div className="product-info">
+
+                  <h3>
+                    {product.name}
+                  </h3>
+
+                  <p className="price">
+                    {Number(product.price).toLocaleString("vi-VN")}đ
+                  </p>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/products/${product.id}`);
+                    }}
+                  >
+                    Xem sản phẩm
+                  </button>
+
+                </div>
+
+              </div>
+
+            ))}
+
+          </div>
+
+        )}
+
+        {/* Xem tất cả */}
+
+        {!loadingProducts && products.length > 4 && (
+
+          <div className="view-all">
+
+            <button
+              onClick={() => navigate("/products")}
+            >
+              Xem tất cả sản phẩm →
+            </button>
+
+          </div>
+
+        )}
 
       </section>
 
 
-      {/* CONSULTATION */}
+      {/* =========================
+          CONSULTATION
+      ========================= */}
       <section className="consultation">
 
         <div className="consultation-content">
 
-          <p>KHÔNG BIẾT CHỌN CÁ?</p>
+          <p>
+            KHÔNG BIẾT CHỌN CÁ?
+          </p>
 
           <h2>
             Hãy để AquaHome
@@ -183,7 +294,10 @@ export default function HomePage() {
             gợi ý những loài cá phù hợp.
           </p>
 
-          <button className="btn-consultation">
+          <button
+            className="btn-consultation"
+            onClick={() => navigate("/consultation")}
+          >
             Tư vấn ngay
           </button>
 

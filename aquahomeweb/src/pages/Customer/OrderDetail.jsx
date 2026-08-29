@@ -3,48 +3,36 @@ import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import "./Customer.css";
-
-const API_URL = "http://localhost:8000/api";
+import api from "../../api/api";
 
 export default function OrderDetail() {
-
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-
-    const token =
-      localStorage.getItem("access_token");
-
-    fetch(`${API_URL}/orders/${id}/`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((response) => {
-
-        if (!response.ok) {
-          throw new Error("Không tìm thấy đơn hàng");
-        }
-
-        return response.json();
-      })
-      .then((data) => {
-        setOrder(data);
+    const fetchOrder = async () => {
+      try {
+        const response = await api.get(`orders/${id}/`);
+        setOrder(response.data);
+      } catch (err) {
+        console.error("Lỗi lấy chi tiết đơn hàng:", err);
+        setError(
+          err.response?.data?.detail ||
+          "Không tìm thấy đơn hàng."
+        );
+      } finally {
         setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
+      }
+    };
 
+    fetchOrder();
   }, [id]);
 
-
   const getStatusText = (status) => {
-
     const statuses = {
       PENDING: "Chờ xử lý",
       PROCESSING: "Đang xử lý",
@@ -56,31 +44,27 @@ export default function OrderDetail() {
     return statuses[status] || status;
   };
 
-
   if (loading) {
     return (
       <div className="customer-page">
         <Header />
 
-        <div className="products-message">
-          Đang tải...
-        </div>
+        <main className="products-message">
+          Đang tải đơn hàng...
+        </main>
 
         <Footer />
       </div>
     );
   }
 
-
-  if (!order) {
+  if (error || !order) {
     return (
       <div className="customer-page">
-
         <Header />
 
-        <div className="products-message">
-
-          <h2>Không tìm thấy đơn hàng</h2>
+        <main className="products-message">
+          <h2>{error || "Không tìm thấy đơn hàng"}</h2>
 
           <button
             className="continue-button"
@@ -88,23 +72,20 @@ export default function OrderDetail() {
           >
             Quay lại đơn hàng
           </button>
-
-        </div>
+        </main>
 
         <Footer />
-
       </div>
     );
   }
 
-
   return (
     <div className="customer-page">
-
       <Header />
 
       <main className="order-detail-page">
 
+        {/* Header đơn hàng */}
         <div className="order-detail-title">
 
           <button
@@ -126,9 +107,7 @@ export default function OrderDetail() {
 
         </div>
 
-
         {/* Thông tin nhận hàng */}
-
         <section className="order-section">
 
           <h2>Thông tin nhận hàng</h2>
@@ -161,31 +140,37 @@ export default function OrderDetail() {
 
         </section>
 
-
-        {/* Sản phẩm */}
-
+        {/* Danh sách sản phẩm */}
         <section className="order-section">
 
           <h2>Sản phẩm</h2>
 
-          {order.items.map((item) => (
+          {order.items?.map((item) => (
 
             <div
               className="order-detail-item"
               key={item.id}
             >
 
-              <span>
-                Sản phẩm #{item.product}
-              </span>
+              <div className="order-product-info">
+                  {item.product_image ? (
+                    <img
+                      src={item.product_image}
+                      alt={item.product_name}
+                    />
+                  ) : (
+                    <div className="no-image">Không có ảnh</div>
+                  )}
+
+                  <span>{item.product_name}</span>
+                </div>
 
               <span>
                 {item.quantity} sản phẩm
               </span>
 
               <strong>
-                {Number(item.price)
-                  .toLocaleString("vi-VN")}đ
+                {Number(item.price).toLocaleString("vi-VN")}đ
               </strong>
 
             </div>
@@ -199,8 +184,7 @@ export default function OrderDetail() {
             <span>Tổng cộng</span>
 
             <strong>
-              {Number(order.total_amount)
-                .toLocaleString("vi-VN")}đ
+              {Number(order.total_amount).toLocaleString("vi-VN")}đ
             </strong>
 
           </div>
@@ -210,7 +194,6 @@ export default function OrderDetail() {
       </main>
 
       <Footer />
-
     </div>
   );
 }

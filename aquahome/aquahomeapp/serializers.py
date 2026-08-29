@@ -21,7 +21,7 @@ class UserRegisterSerializer(serializers.ModelSerializer, AvatarFullNameMixin):
     password = serializers.CharField(write_only=True)
     class Meta:
         model = User
-        fields = ["username", "email","password", "first_name", "last_name","phone", 'avatar']
+        fields = ["username", "email","password","phone"]
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
 class StaffCreateSerializer(serializers.ModelSerializer, AvatarFullNameMixin):
@@ -39,6 +39,7 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['created_at', 'updated_at']
 
+#admin/staffupdate
 class ProductSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.name', read_only=True)
     category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
@@ -53,10 +54,11 @@ class ProductSerializer(serializers.ModelSerializer):
         if instance.image:
             data['image'] = instance.image.url
         return data
+#view
 class ProductListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ['name', 'price', 'image', 'quantity']
+        fields = ['id','name', 'price', 'image', 'quantity', 'category']
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -67,13 +69,16 @@ class ProductDetailSerializer(ProductListSerializer):
     category = serializers.CharField(source='category.name', read_only=True)
     class Meta:
         model = Product
-        fields = ProductListSerializer.Meta.fields + ['category','description']
+        fields = ProductListSerializer.Meta.fields + ['description']
+
 
 class OrderItemSerializer(serializers.ModelSerializer):
     price = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
+    product_name = serializers.CharField(source="product.name", read_only=True)
+    product_image = serializers.SerializerMethodField()
     class Meta:
         model = OrderItem
-        fields = ['id', 'product', 'quantity', 'price']
+        fields = ['id', 'product', 'quantity', 'price','product_name', 'product_image']
 
 class OrderCreateSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True)

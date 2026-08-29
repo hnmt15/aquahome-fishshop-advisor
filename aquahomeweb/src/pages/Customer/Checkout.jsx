@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import "./Customer.css";
-
-const API_URL = "http://localhost:8000/api";
+import api from "../../api/api";
 
 export default function Checkout() {
   const navigate = useNavigate();
@@ -20,7 +19,6 @@ export default function Checkout() {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
   useEffect(() => {
     const savedCart =
       JSON.parse(localStorage.getItem("cart")) || [];
@@ -29,10 +27,10 @@ export default function Checkout() {
   }, []);
 
   const handleChange = (e) => {
-    setForm({
-      ...form,
+    setForm((prev) => ({
+      ...prev,
       [e.target.name]: e.target.value,
-    });
+    }));
   };
 
   const total = cart.reduce(
@@ -62,44 +60,41 @@ export default function Checkout() {
     };
 
     try {
-      const response = await fetch(
-        `${API_URL}/orders/`,
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type": "application/json",
-
-            // Nếu API yêu cầu token thì thêm:
-            // Authorization: `Bearer ${token}`,
-          },
-
-          body: JSON.stringify(data),
+      const response = await api.post("orders/", data);
+      localStorage.removeItem("cart");
+      navigate(`/orders/${response.data.id}`);
+    } catch (err) {
+      console.error("Lỗi tạo đơn hàng:", err);
+      if (err.response?.data) {
+        const backendError = err.response.data;
+        if (backendError.detail) {
+          setError(backendError.detail);
         }
-      );
+        // Lỗi items / customer_name / phone...
+        else {
+          const firstErrorKey =
+            Object.keys(backendError)[0];
 
-      const result = await response.json();
+          const firstError =
+            backendError[firstErrorKey];
 
-      if (!response.ok) {
-        throw new Error(
-          result.detail ||
-          "Không thể tạo đơn hàng."
+          setError(
+            `${firstErrorKey}: ${
+              Array.isArray(firstError)
+                ? firstError.join(", ")
+                : firstError
+            }`
+          );
+        }
+      } else {
+        setError(
+          "Không thể kết nối đến server."
         );
       }
-
-      // Xóa cart sau khi đặt hàng thành công
-      localStorage.removeItem("cart");
-
-      // Chuyển đến chi tiết đơn hàng
-      navigate(`/orders/${result.id}`);
-
-    } catch (err) {
-      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
-
 
   return (
     <div className="customer-page">
@@ -111,8 +106,6 @@ export default function Checkout() {
         <h1>Đặt hàng</h1>
 
         <div className="checkout-layout">
-
-          {/* Form */}
 
           <form
             className="checkout-form"
@@ -129,9 +122,12 @@ export default function Checkout() {
 
             <div className="checkout-field">
 
-              <label>Họ và tên</label>
+              <label htmlFor="customer_name">
+                Họ và tên
+              </label>
 
               <input
+                id="customer_name"
                 name="customer_name"
                 value={form.customer_name}
                 onChange={handleChange}
@@ -141,12 +137,14 @@ export default function Checkout() {
 
             </div>
 
-
             <div className="checkout-field">
 
-              <label>Số điện thoại</label>
+              <label htmlFor="customer_phone">
+                Số điện thoại
+              </label>
 
               <input
+                id="customer_phone"
                 name="customer_phone"
                 value={form.customer_phone}
                 onChange={handleChange}
@@ -156,12 +154,14 @@ export default function Checkout() {
 
             </div>
 
-
             <div className="checkout-field">
 
-              <label>Địa chỉ nhận hàng</label>
+              <label htmlFor="customer_address">
+                Địa chỉ nhận hàng
+              </label>
 
               <textarea
+                id="customer_address"
                 name="customer_address"
                 value={form.customer_address}
                 onChange={handleChange}
@@ -171,12 +171,14 @@ export default function Checkout() {
 
             </div>
 
-
             <div className="checkout-field">
 
-              <label>Ghi chú</label>
+              <label htmlFor="notes">
+                Ghi chú
+              </label>
 
               <textarea
+                id="notes"
                 name="notes"
                 value={form.notes}
                 onChange={handleChange}
@@ -184,7 +186,6 @@ export default function Checkout() {
               />
 
             </div>
-
 
             <button
               type="submit"
@@ -198,9 +199,7 @@ export default function Checkout() {
 
           </form>
 
-
-          {/* Order summary */}
-
+          {/* Tóm tắt đơn hàng */}
           <aside className="checkout-summary">
 
             <h2>Đơn hàng của bạn</h2>
