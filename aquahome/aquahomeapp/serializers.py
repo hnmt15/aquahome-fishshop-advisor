@@ -1,4 +1,4 @@
-from .models import User, Category, Product, Order, OrderItem
+from .models import User, Category, Product, Order, OrderItem, Feature, Species, SpeciesFeature
 from rest_framework import serializers
 
 class AvatarFullNameMixin:
@@ -152,6 +152,20 @@ class OrderDetailSerializer(OrderListSerializer):
         model = Order
         fields = OrderListSerializer.Meta.fields + ['customer_name', 'customer_phone', 'customer_address', 'notes', 'created_at', 'updated_at']
 
+class FeatureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Feature
+        fields = ['id', 'name', 'description']
 
+class SpeciesFeatureSerializer(serializers.ModelSerializer):
+    feature = FeatureSerializer(read_only=True)
+    class Meta:
+        model = SpeciesFeature
+        fields = ['feature']
 
+class SpeciesDetailSerializer(serializers.ModelSerializer):
+    species_features = SpeciesFeatureSerializer(source='features', many=True, read_only=True)
+    class Meta:
+        model = Species
+        fields = ['id', 'name_vn', 'features', 'description', 'species_features']
 

@@ -1,12 +1,13 @@
 from django.shortcuts import render
 from django.db import models
 from aquahomeapp import serializers
-from aquahomeapp.models import Product, Category, User, Order
+from aquahomeapp.models import Product, Category, User, Order, Species
 from rest_framework import viewsets, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
+from rest_framework import generics
 
 from .perms import *
 
@@ -119,5 +120,8 @@ class OrderViewSet(viewsets.ModelViewSet):
         else:
             raise PermissionDenied("Bạn không có quyền chỉnh sửa đơn hàng này.")
 
+class SpeciesViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Species.objects.prefetch_related('features__feature').all()
+    serializer_class = serializers.SpeciesDetailSerializer
 
 
