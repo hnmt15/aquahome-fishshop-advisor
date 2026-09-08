@@ -6,9 +6,13 @@ from .rules.filter2 import filter_by_compatibility
 from .rules.scoring import rank_candidates
 from collections import defaultdict
 from django.db.models import Max, Min
+
 DEFAULT_WEIGHTS = {
-    "price": 0.5,
-    "max_length": 0.5,
+    "price": 0.30,
+    "max_length": 0.20,
+    "temperament": 0.20,
+    "layer": 0.15,
+    "social": 0.15,
 }
 
 def get_numeric_ranges():
@@ -85,7 +89,6 @@ def recommend(
 
     # Bước 1
     tier1_candidates = filter_by_environment(tank_size, temperature, ph, has_plants)
-    # Giữ map id tên loài để enrich rejected_tier2 bằng tên loài mà không cần query lại
     species_name_map = {sp.id: sp.name_vn for sp in tier1_candidates}
 
     # Bước 2
@@ -96,33 +99,52 @@ def recommend(
     ]
     #Bước 3
     numeric_ranges = get_numeric_ranges()
-    ranked = rank_candidates(
-        candidates,
-        customer_preferences,
-        DEFAULT_WEIGHTS,
-        numeric_ranges,
-        top_n=top_n,
-    )
+    has_preferences = bool(customer_preferences)
+
+    if has_preferences:
+        ranked = rank_candidates(
+            candidates,
+            customer_preferences,
+            DEFAULT_WEIGHTS,
+            numeric_ranges,
+            top_n=top_n,
+        )
+    else:
+        ranked = []
+        products_map = get_product_recommendations(candidates)
+        for species in candidates[:top_n]:
+            related_products = products_map.get(species.id, [])
+
+            selected_product = (
+                related_products[0].product
+                if related_products
+                else None
+            )
+            ranked.append(
+                (species, None, selected_product)
+            )
     # Bước 4
-    species_only = [
-        species
-        for species, score, product in ranked
-    ]
-    products_map = get_product_recommendations(species_only)
     results = []
+
     for species, score, selected_product in ranked:
-        related_products = products_map.get(
-            species.id,
-            []
-        )
-        results.append(
-            {
-                "species": species,
-                "score": round(score, 4),
-                "product": selected_product,
-                "products": related_products,
-            }
-        )
+        results.append({
+            "species": {
+                "id": species.id,
+                "name_vn": species.name_vn,
+                "scientific_name": species.scientific_name,
+            },
+            "product": {
+                "id": selected_product.id,
+                "name": selected_product.name,
+                "price": float(selected_product.price),
+                "image": (
+                    selected_product.image.url
+                    if selected_product.image
+                    else None
+                ),
+            } if selected_product else None,
+            "score": round(score, 4) if score is not None else None,
+        })
     return {
         "results": results,
         "rejected": rejected_details,

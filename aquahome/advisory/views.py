@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -23,24 +22,4 @@ class AdvisoryRecommendView(APIView):
             top_n=data["top_n"],
         )
 
-        payload = {
-            "results": [
-                {
-                    "id": item["species"].id,
-                    "name": item["species"].name_vn,
-                    "scientific_name": item["species"].scientific_name,
-                    "score": item["score"],
-                    "product": (
-                        {
-                            "id": item["product"].id,
-                            "name": item["product"].name,
-                            "price": float(item["product"].price),
-                        }
-                        if item["product"]
-                        else None
-                    ),
-                }
-                for item in result["results"]
-            ],
-        }
-        return Response(payload, status=status.HTTP_200_OK)
+        return Response(result, status=status.HTTP_200_OK)

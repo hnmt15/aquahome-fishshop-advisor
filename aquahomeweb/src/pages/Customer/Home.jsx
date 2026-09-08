@@ -118,7 +118,7 @@ export default function HomePage() {
                 }
               >
                 <div className="category-icon">
-                  🐟
+
                 </div>
                 <h3>
                   {category.name}

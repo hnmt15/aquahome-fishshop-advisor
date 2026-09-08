@@ -133,7 +133,7 @@
       rgba(3, 30, 55, 0.45),
       rgba(3, 30, 55, 0.6)
     ),
-    url("/images/aquarium.jpg");
+    url("../../assets/hero.jpg");
 
   background-size: cover;
   background-position: center;
@@ -141,7 +141,6 @@
 
 .hero-content {
   position: relative;
-
   margin-left: 10%;
 
   color: white;
@@ -158,6 +157,9 @@
   font-size: 52px;
   line-height: 1.1;
   margin: 15px 0;
+}
+.hero-content h1 {
+  color: #ffffff;
 }
 
 .hero-description {

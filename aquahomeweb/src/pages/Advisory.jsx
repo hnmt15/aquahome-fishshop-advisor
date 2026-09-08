@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/api";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 import "./Advisory.css";
 
 function AdvisoryPage() {
@@ -13,38 +15,40 @@ function AdvisoryPage() {
 
   const [preferredPrice, setPreferredPrice] = useState("");
   const [preferredMaxLength, setPreferredMaxLength] = useState("");
-
+  const [temperament, setTemperament] = useState("");
+  const [layer, setLayer] = useState("");
+  const [social, setSocial] = useState("");
 
   const [speciesList, setSpeciesList] = useState([]);
   const [results, setResults] = useState(null);
+  const [showExploreMessage, setShowExploreMessage] = useState(false);
 
   const [loadingSpecies, setLoadingSpecies] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Dùng để đảm bảo dữ liệu cũ đã được khôi phục
+  // trước khi bắt đầu tự động lưu state mới.
+  const [isRestored, setIsRestored] = useState(false);
+
+
+  // =========================================================
+  // LOAD DANH SÁCH LOÀI CÁ
+  // =========================================================
 
   useEffect(() => {
     const loadSpecies = async () => {
       try {
-        setLoadingSpecies(true);
-
         const response = await api.get("/species");
 
-        //response.data.results
-        //response.data
-        const data = response.data;
+        const data = Array.isArray(response.data)
+          ? response.data
+          : response.data.results || [];
 
-        if (Array.isArray(data)) {
-          setSpeciesList(data);
-        } else {
-          setSpeciesList(data.results || []);
-        }
+        setSpeciesList(data);
       } catch (err) {
-        console.error("Load species error:", err);
-
-        setError(
-          "Không thể tải danh sách loài cá. Vui lòng thử lại sau."
-        );
+        console.error(err);
+        setError("Không thể tải danh sách loài cá.");
       } finally {
         setLoadingSpecies(false);
       }
@@ -53,39 +57,179 @@ function AdvisoryPage() {
     loadSpecies();
   }, []);
 
-  // =========================
-  // SELECT EXISTING SPECIES
-  // =========================
-  const handleSpeciesChange = (e) => {
-    const selectedSpecies = Array.from(
-      e.target.selectedOptions,
-      (option) => option.value
+
+  // =========================================================
+  // KHÔI PHỤC THÔNG TIN TƯ VẤN
+  // =========================================================
+
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem("advisoryState");
+
+      if (saved) {
+        const data = JSON.parse(saved);
+
+        setTankSize(data.tankSize ?? "");
+        setTemperature(data.temperature ?? "");
+        setPh(data.ph ?? "");
+        setHasPlants(data.hasPlants ?? false);
+
+        setExistingSpecies(data.existingSpecies ?? []);
+
+        setPreferredPrice(data.preferredPrice ?? "");
+        setPreferredMaxLength(data.preferredMaxLength ?? "");
+        setTemperament(data.temperament ?? "");
+        setLayer(data.layer ?? "");
+        setSocial(data.social ?? "");
+
+        setResults(data.results ?? null);
+        setShowExploreMessage(
+          data.showExploreMessage ?? false
+        );
+      }
+    } catch (err) {
+      console.error(
+        "Không thể khôi phục thông tin tư vấn:",
+        err
+      );
+
+      sessionStorage.removeItem("advisoryState");
+    } finally {
+      // Chỉ sau khi restore xong mới cho phép lưu
+      setIsRestored(true);
+    }
+  }, []);
+
+
+  // =========================================================
+  // TỰ ĐỘNG LƯU THÔNG TIN TƯ VẤN
+  // =========================================================
+
+  useEffect(() => {
+    // Tránh ghi đè dữ liệu cũ ngay khi component vừa mount.
+    if (!isRestored) return;
+
+    const advisoryState = {
+      tankSize,
+      temperature,
+      ph,
+      hasPlants,
+
+      existingSpecies,
+
+      preferredPrice,
+      preferredMaxLength,
+      temperament,
+      layer,
+      social,
+
+      results,
+      showExploreMessage,
+    };
+
+    sessionStorage.setItem(
+      "advisoryState",
+      JSON.stringify(advisoryState)
     );
+  }, [
+    isRestored,
 
-    setExistingSpecies(selectedSpecies);
-  };
+    tankSize,
+    temperature,
+    ph,
+    hasPlants,
 
-  // =========================
-  // SUBMIT
-  // =========================
+    existingSpecies,
+
+    preferredPrice,
+    preferredMaxLength,
+    temperament,
+    layer,
+    social,
+
+    results,
+    showExploreMessage,
+  ]);
+
+
+  // =========================================================
+  // SUBMIT TƯ VẤN
+  // =========================================================
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     setError("");
     setResults(null);
+    setShowExploreMessage(false);
+
+    // ---------------------------------------------------------
+    // KIỂM TRA KÍCH THƯỚC CÁ
+    // ---------------------------------------------------------
+
+    if (
+      preferredMaxLength !== "" &&
+      (
+        Number(preferredMaxLength) < 1 ||
+        Number(preferredMaxLength) > 100
+      )
+    ) {
+      setError(
+        "Kích thước cá phải nằm trong khoảng 1–100 cm."
+      );
+      return;
+    }
+
+
+    // ---------------------------------------------------------
+    // KIỂM TRA CÓ THÔNG TIN TƯ VẤN HAY CHƯA
+    // ---------------------------------------------------------
+
+    const hasAnySelection =
+      tankSize !== "" ||
+      temperature !== "" ||
+      ph !== "" ||
+      hasPlants ||
+      existingSpecies.length > 0 ||
+      preferredPrice !== "" ||
+      preferredMaxLength !== "" ||
+      temperament !== "" ||
+      layer !== "" ||
+      social !== "";
+
+    // Nếu người dùng không chọn gì
+    // thì không gọi API.
+    if (!hasAnySelection) {
+      setShowExploreMessage(true);
+      return;
+    }
+
+
+    // ---------------------------------------------------------
+    // GỌI API
+    // ---------------------------------------------------------
+
     setLoading(true);
 
     try {
       const payload = {
-        // Không biết thì gửi null
-        tank_size: tankSize !== "" ? Number(tankSize) : null,
+        tank_size:
+          tankSize !== ""
+            ? Number(tankSize)
+            : null,
+
         temperature:
-          temperature !== "" ? Number(temperature) : null,
-        ph: ph !== "" ? Number(ph) : null,
+          temperature !== ""
+            ? Number(temperature)
+            : null,
+
+        ph:
+          ph !== ""
+            ? Number(ph)
+            : null,
 
         has_plants: hasPlants,
 
-        // Có thể là [] nếu khách không chọn loài nào
         existing_species: existingSpecies,
 
         preferred_price:
@@ -98,6 +242,15 @@ function AdvisoryPage() {
             ? Number(preferredMaxLength)
             : null,
 
+        preferred_temperament:
+          temperament || null,
+
+        preferred_layer:
+          layer || null,
+
+        preferred_social:
+          social || null,
+
         top_n: 5,
       };
 
@@ -106,224 +259,213 @@ function AdvisoryPage() {
         payload
       );
 
-      setResults(response.data.results || []);
+      setResults(response.data);
 
-      // Cuộn xuống phần kết quả
-      setTimeout(() => {
-        document
-          .getElementById("advisory-results")
-          ?.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-          });
-      }, 100);
     } catch (err) {
-      console.error("Advisory error:", err);
+      console.error(err);
 
-      const responseData = err.response?.data;
+      const message =
+        err.response?.data?.detail ||
+        "Không thể thực hiện tư vấn. Vui lòng thử lại.";
 
-      if (typeof responseData === "string") {
-        setError(responseData);
-      } else if (responseData?.detail) {
-        setError(responseData.detail);
-      } else if (responseData?.non_field_errors) {
-        setError(
-          responseData.non_field_errors.join(" ")
-        );
-      } else {
-        setError(
-          "Không thể thực hiện tư vấn. Vui lòng thử lại."
-        );
-      }
+      setError(message);
+
     } finally {
       setLoading(false);
     }
   };
 
-  // =========================
-  // RESET / TRY AGAIN
-  // =========================
-  const handleRetry = () => {
+
+  // =========================================================
+  // RESET
+  // =========================================================
+
+  const handleReset = () => {
+    setTankSize("");
+    setTemperature("");
+    setPh("");
+    setHasPlants(false);
+
+    setExistingSpecies([]);
+
+    setPreferredPrice("");
+    setPreferredMaxLength("");
+    setTemperament("");
+    setLayer("");
+    setSocial("");
+
     setResults(null);
     setError("");
+    setShowExploreMessage(false);
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    // Xóa luôn dữ liệu đã lưu
+    sessionStorage.removeItem("advisoryState");
   };
 
+
   return (
-    <main className="advisory-page">
-      <div className="advisory-container">
+    <>
+      <Header />
 
-        {/* =========================================
+      <main className="advisory-page">
+
+        {/* =====================================================
             HEADER
-        ========================================== */}
-        <header className="advisory-header">
-          <span className="advisory-label">
-            AQUAHOME ADVISORY
-          </span>
+        ====================================================== */}
 
-          <h1>Tìm loài cá phù hợp với bạn</h1>
+        <div className="advisory-header">
+
+          <Link
+            to="/"
+            className="back-link"
+          >
+            ← Quay lại cửa hàng
+          </Link>
+
+          <h1>
+            Tư vấn chọn cá
+          </h1>
 
           <p>
-            Cung cấp một vài thông tin về bể cá và sở thích
-            của bạn. AquaHome sẽ phân tích và đề xuất những
-            loài cá phù hợp trong phạm vi dữ liệu của cửa hàng.
+            Hãy cung cấp một số thông tin về hồ cá và sở thích
+            của bạn để AquaHome tìm những loài cá phù hợp nhé.
           </p>
-        </header>
 
-
-        {/* =========================================
-            IMPORTANT NOTE
-        ========================================== */}
-        <div className="advisory-note">
-          <div className="note-icon">i</div>
-
-          <div>
-            <strong>Lưu ý trước khi tư vấn</strong>
-
-            <p>
-              Kết quả tư vấn được xây dựng dựa trên dữ liệu
-              và các loài cá hiện có trong hệ thống AquaHome.
-              Vì vậy, kết quả chỉ giới hạn trong phạm vi tài
-              nguyên của cửa hàng và không đại diện cho toàn
-              bộ các loài cá có thể nuôi trên thực tế.
-            </p>
-
-            <p>
-              Bạn không cần biết chính xác tất cả thông tin.
-              Những thông tin bạn chưa biết có thể bỏ trống.
-              Hệ thống sẽ tự xử lý dựa trên những dữ liệu
-              bạn cung cấp.
-            </p>
-          </div>
         </div>
 
 
-        {/* =========================================
-            ERROR
-        ========================================== */}
-        {error && (
-          <div className="advisory-error">
-            {error}
-          </div>
-        )}
-
-
-        {/* =========================================
+        {/* =====================================================
             FORM
-        ========================================== */}
-        <form onSubmit={handleSubmit}>
+        ====================================================== */}
 
-          {/* =======================================
-              SECTION 01 — TANK
-          ======================================== */}
+        <form
+          className="advisory-form"
+          onSubmit={handleSubmit}
+        >
+
+          {/* =================================================
+              01 - ĐIỀU KIỆN HỒ CÁ
+          ================================================== */}
+
           <section className="advisory-section">
 
-            <div className="section-heading">
-              <span>01</span>
+            <div className="section-title">
+
+              <span className="section-number">
+                01
+              </span>
 
               <div>
-                <h2>Thông tin bể cá</h2>
+
+                <h2>
+                  Điều kiện hồ cá
+                </h2>
 
                 <p>
-                  Những thông tin này giúp hệ thống xác
-                  định môi trường phù hợp cho cá.
+                  Cho biết môi trường hiện tại của hồ cá.
                 </p>
+
               </div>
+
             </div>
 
 
             <div className="form-grid">
 
-              {/* Tank size */}
+              {/* DUNG TÍCH */}
+
               <div className="form-group">
-                <label htmlFor="tank-size">
-                  Thể tích bể
+
+                <label htmlFor="tankSize">
+                  Dung tích hồ
                 </label>
 
                 <div className="input-with-unit">
+
                   <input
-                    id="tank-size"
+                    id="tankSize"
                     type="number"
                     min="0"
-                    step="0.1"
-                    placeholder="Ví dụ: 60"
                     value={tankSize}
                     onChange={(e) =>
                       setTankSize(e.target.value)
                     }
+                    placeholder="Ví dụ: 60"
                   />
 
-                  <span>lít</span>
+                  <span>
+                    lít
+                  </span>
+
                 </div>
 
-                <small>
-                  Nếu chưa biết, bạn có thể bỏ trống.
-                </small>
               </div>
 
 
-              {/* Temperature */}
+              {/* NHIỆT ĐỘ */}
+
               <div className="form-group">
+
                 <label htmlFor="temperature">
                   Nhiệt độ nước
                 </label>
 
                 <div className="input-with-unit">
+
                   <input
                     id="temperature"
                     type="number"
-                    min="0"
                     step="0.1"
-                    placeholder="Ví dụ: 26"
                     value={temperature}
                     onChange={(e) =>
                       setTemperature(e.target.value)
                     }
+                    placeholder="Ví dụ: 26"
                   />
 
-                  <span>°C</span>
+                  <span>
+                    °C
+                  </span>
+
                 </div>
 
-                <small>
-                  Nếu không rõ, có thể bỏ trống.
-                </small>
               </div>
 
 
-              {/* pH */}
+              {/* PH */}
+
               <div className="form-group">
+
                 <label htmlFor="ph">
                   Độ pH
                 </label>
 
-                <div className="input-with-unit">
-                  <input
-                    id="ph"
-                    type="number"
-                    min="0"
-                    max="14"
-                    step="0.1"
-                    placeholder="Ví dụ: 7.0"
-                    value={ph}
-                    onChange={(e) =>
-                      setPh(e.target.value)
-                    }
-                  />
-                </div>
+                <input
+                  id="ph"
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  max="14"
+                  value={ph}
+                  onChange={(e) =>
+                    setPh(e.target.value)
+                  }
+                  placeholder="Ví dụ: 7.0"
+                />
 
-                <small>
-                  Nếu không rõ, có thể bỏ trống.
-                </small>
               </div>
 
 
-              {/* Plants */}
-              <div className="form-group checkbox-group">
+              {/* CÂY THỦY SINH */}
+
+              <div className="form-group plant-group">
+
+                <label>
+                  Cây thủy sinh
+                </label>
+
                 <label className="checkbox-label">
+
                   <input
                     type="checkbox"
                     checked={hasPlants}
@@ -333,14 +475,11 @@ function AdvisoryPage() {
                   />
 
                   <span>
-                    Bể có trồng cây thủy sinh
+                    Hồ có trồng cây thủy sinh
                   </span>
+
                 </label>
 
-                <small>
-                  Bỏ chọn nếu bể không có cây hoặc bạn
-                  không chắc chắn.
-                </small>
               </div>
 
             </div>
@@ -348,325 +487,696 @@ function AdvisoryPage() {
           </section>
 
 
-          {/* =======================================
-              SECTION 02 — EXISTING SPECIES
-          ======================================== */}
+          {/* =================================================
+              02 - CÁ ĐANG NUÔI
+          ================================================== */}
+
           <section className="advisory-section">
 
-            <div className="section-heading">
-              <span>02</span>
+            <div className="section-title">
+
+              <span className="section-number">
+                02
+              </span>
 
               <div>
-                <h2>Cá bạn đang nuôi</h2>
+
+                <h2>
+                  Cá đang nuôi
+                </h2>
 
                 <p>
-                  Chọn những loài cá hiện đang sống trong
-                  bể để hệ thống kiểm tra khả năng tương thích.
+                  Chọn những loài cá đang có trong hồ để kiểm tra
+                  khả năng tương thích.
                 </p>
+
               </div>
+
             </div>
 
 
-            <div className="form-group species-group">
+            <div className="form-group">
 
-              <label htmlFor="existing-species">
-                Các loài đang nuôi
+              <label htmlFor="existingSpecies">
+                Loài cá hiện có
               </label>
 
-              {loadingSpecies ? (
-                <div className="species-loading">
-                  Đang tải danh sách loài cá...
-                </div>
-              ) : (
-                <select
-                  id="existing-species"
-                  multiple
-                  value={existingSpecies}
-                  onChange={handleSpeciesChange}
-                  className="species-select"
-                >
-                  {speciesList.map((species) => (
+              <select
+                id="existingSpecies"
+                multiple
+                value={existingSpecies}
+                onChange={(e) => {
+
+                  const values = Array.from(
+                    e.target.selectedOptions,
+                    (option) => option.value
+                  );
+
+                  setExistingSpecies(values);
+
+                }}
+                disabled={loadingSpecies}
+              >
+
+                {loadingSpecies ? (
+
+                  <option>
+                    Đang tải danh sách...
+                  </option>
+
+                ) : (
+
+                  speciesList.map((species) => (
+
                     <option
                       key={species.id}
                       value={species.scientific_name}
                     >
-                      {species.name_vn} (
-                      {species.scientific_name}
-                      )
+                      {species.name_vn}
                     </option>
-                  ))}
-                </select>
-              )}
+
+                  ))
+
+                )}
+
+              </select>
 
               <small>
-                Giữ Ctrl (Windows) hoặc Command (Mac)
-                để chọn nhiều loài.
+                Có thể giữ Ctrl hoặc Command để chọn nhiều loài.
               </small>
-
-              <small>
-                Nếu bạn chưa nuôi cá hoặc không rõ,
-                có thể bỏ trống phần này.
-              </small>
-
-              {existingSpecies.length > 0 && (
-                <div className="selected-species-count">
-                  Đã chọn{" "}
-                  <strong>
-                    {existingSpecies.length}
-                  </strong>{" "}
-                  loài
-                </div>
-              )}
 
             </div>
 
           </section>
 
 
-          {/* =======================================
-              SECTION 03 — PREFERENCES
-          ======================================== */}
+          {/* =================================================
+              03 - SỞ THÍCH
+          ================================================== */}
+
           <section className="advisory-section">
 
-            <div className="section-heading">
-              <span>03</span>
+            <div className="section-title">
+
+              <span className="section-number">
+                03
+              </span>
 
               <div>
-                <h2>Sở thích của bạn</h2>
+
+                <h2>
+                  Sở thích của bạn
+                </h2>
 
                 <p>
-                  Những thông tin này giúp hệ thống xếp
-                  hạng các loài phù hợp với nhu cầu của bạn.
+                  Không bắt buộc. Bạn có thể bỏ qua nếu chưa có
+                  yêu cầu cụ thể.
                 </p>
+
               </div>
+
             </div>
 
 
             <div className="form-grid">
 
-              {/* Price */}
+              {/* GIÁ */}
+
               <div className="form-group">
-                <label htmlFor="preferred-price">
+
+                <label htmlFor="preferredPrice">
                   Mức giá mong muốn
                 </label>
 
                 <div className="input-with-unit">
+
                   <input
-                    id="preferred-price"
+                    id="preferredPrice"
                     type="number"
                     min="0"
-                    step="1000"
-                    placeholder="Ví dụ: 150000"
                     value={preferredPrice}
                     onChange={(e) =>
                       setPreferredPrice(e.target.value)
                     }
+                    placeholder="Ví dụ: 50000"
                   />
 
-                  <span>VNĐ</span>
+                  <span>
+                    VNĐ
+                  </span>
+
                 </div>
 
                 <small>
-                  Không bắt buộc. Có thể bỏ trống nếu chưa
-                  xác định ngân sách.
+                  Mức giá gần với ngân sách của bạn.
                 </small>
+
               </div>
 
 
-              {/* Length */}
+              {/* KÍCH THƯỚC */}
+
               <div className="form-group">
-                <label htmlFor="preferred-length">
+
+                <label htmlFor="preferredMaxLength">
                   Kích thước cá mong muốn
                 </label>
 
                 <div className="input-with-unit">
+
                   <input
-                    id="preferred-length"
+                    id="preferredMaxLength"
                     type="number"
-                    min="0"
-                    step="0.1"
-                    placeholder="Ví dụ: 6"
+                    min="1"
+                    max="100"
+                    step="1"
                     value={preferredMaxLength}
                     onChange={(e) =>
                       setPreferredMaxLength(e.target.value)
                     }
+                    placeholder="Ví dụ: 10"
                   />
 
-                  <span>cm</span>
+                  <span>
+                    cm
+                  </span>
+
                 </div>
 
                 <small>
-                  Không bắt buộc. Có thể bỏ trống nếu chưa
-                  có sở thích cụ thể.
+                  Nhập kích thước từ 1–100 cm.
                 </small>
+
               </div>
 
-            </div>
+
+              {/* TÍNH CÁCH */}
+
+              <div className="form-group">
+
+                <label htmlFor="temperament">
+                  Tính cách
+                </label>
+
+                <select
+                  id="temperament"
+                  value={temperament}
+                  onChange={(e) =>
+                    setTemperament(e.target.value)
+                  }
+                >
+
+                  <option value="">
+                    Không yêu cầu
+                  </option>
+
+                  <option value="Ôn hòa">
+                    Hiền hòa
+                  </option>
+
+                  <option value="Bán hung dữ">
+                    Bán hung dữ
+                  </option>
+
+                  <option value="Hung dữ">
+                    Hung dữ
+                  </option>
+
+                </select>
+
+                <small>
+                  Mức độ hiền hoặc hung dữ của cá.
+                </small>
+
+              </div>
 
 
-            <div className="optional-note">
-              <strong>Không chắc chắn?</strong>{" "}
-              Không sao cả. Bạn có thể bỏ trống các thông
-              tin chưa biết và để hệ thống tư vấn dựa trên
-              những dữ liệu hiện có.
+              {/* TẦNG BƠI */}
+
+              <div className="form-group">
+
+                <label htmlFor="layer">
+                  Tầng bơi
+                </label>
+
+                <select
+                  id="layer"
+                  value={layer}
+                  onChange={(e) =>
+                    setLayer(e.target.value)
+                  }
+                >
+
+                  <option value="">
+                    Không yêu cầu
+                  </option>
+
+                  <option value="Tầng mặt">
+                    Tầng mặt
+                  </option>
+
+                  <option value="Tầng giữa">
+                    Tầng giữa
+                  </option>
+
+                  <option value="Tầng đáy">
+                    Tầng đáy
+                  </option>
+
+                </select>
+
+                <small>
+                  Vị trí cá thường hoạt động trong hồ.
+                </small>
+
+              </div>
+
+
+              {/* KIỂU SỐNG */}
+
+              <div className="form-group">
+
+                <label htmlFor="social">
+                  Kiểu sống
+                </label>
+
+                <select
+                  id="social"
+                  value={social}
+                  onChange={(e) =>
+                    setSocial(e.target.value)
+                  }
+                >
+
+                  <option value="">
+                    Không yêu cầu
+                  </option>
+
+                  <option value="Sống theo đàn">
+                    Sống theo đàn
+                  </option>
+
+                  <option value="Nuôi đơn độc">
+                    Nuôi đơn độc
+                  </option>
+
+                </select>
+
+                <small>
+                  Cá thích sống theo đàn hay nuôi riêng.
+                </small>
+
+              </div>
+
             </div>
 
           </section>
 
 
-          {/* =======================================
-              SUBMIT
-          ======================================== */}
-          <div className="advisory-submit">
+          {/* =================================================
+              ERROR
+          ================================================== */}
+
+          {error && (
+            <div className="advisory-error">
+              {error}
+            </div>
+          )}
+
+
+          {/* =================================================
+              ACTIONS
+          ================================================== */}
+
+          <div className="advisory-actions">
+
+            <button
+              type="button"
+              className="reset-button"
+              onClick={handleReset}
+            >
+              Xóa lựa chọn
+            </button>
 
             <button
               type="submit"
-              disabled={loading || loadingSpecies}
+              className="submit-button"
+              disabled={loading}
             >
-              {loading
-                ? "Đang phân tích..."
-                : "Nhận tư vấn"}
-            </button>
 
-            <p>
-              Kết quả được tạo dựa trên các tiêu chí tương
-              thích và dữ liệu sản phẩm hiện có của AquaHome.
-            </p>
+              {loading
+                ? "Đang tìm cá phù hợp..."
+                : "Tìm cá phù hợp"}
+
+            </button>
 
           </div>
 
         </form>
 
 
-        {/* =========================================
+        {/* =====================================================
+            CHƯA CHỌN THÔNG TIN
+        ====================================================== */}
+
+        {showExploreMessage && (
+
+          <div className="explore-message">
+
+            <div className="explore-icon">
+              ♢
+            </div>
+
+            <h2>
+              Hãy khám phá các sản phẩm của AquaHome
+            </h2>
+
+            <p>
+              Bạn chưa cung cấp thông tin tư vấn nào.
+              Hãy khám phá cửa hàng để tìm hiểu thêm về các
+              loài cá và sản phẩm đang được cung cấp.
+            </p>
+
+            <Link
+              to="/products"
+              className="explore-button"
+            >
+              Khám phá sản phẩm →
+            </Link>
+
+          </div>
+
+        )}
+
+
+        {/* =====================================================
             RESULTS
-        ========================================== */}
-        {results !== null && (
-          <section
-            id="advisory-results"
-            className="advisory-results"
-          >
+        ====================================================== */}
 
-            {/* =======================================
-                HAS RESULTS
-            ======================================== */}
-            {results.length > 0 ? (
-              <>
-                <div className="results-header">
-                  <span>
-                    AQUAHOME RECOMMENDATION
-                  </span>
+        {results && (
 
-                  <h2>
-                    Những loài có thể phù hợp với bạn
-                  </h2>
+          <section className="advisory-results">
 
-                  <p>
-                    Dưới đây là những lựa chọn được xếp
-                    hạng cao nhất dựa trên thông tin bạn
-                    cung cấp.
-                  </p>
-                </div>
+            {/* =================================================
+                RESULTS HEADER
+            ================================================== */}
+
+            <div className="results-header">
+
+              <h2>
+                Kết quả tư vấn
+              </h2>
+
+              <p>
+                Các loài cá được lựa chọn dựa trên những
+                thông tin bạn đã cung cấp.
+              </p>
+
+              <div className="results-note">
+                Các bộ lọc đã giúp bạn tìm ra những cái tên tối ưu nhất theo tiêu chuẩn đặt ra. Dẫu vậy, cá có sống khỏe hay không lại phụ thuộc hoàn toàn vào tay nghề setup và vận hành bể thực tế của bạn. Thêm vào đó, dữ liệu của cửa hàng chỉ có giới hạn và chưa thể gom đủ mọi loài trên thế giới nên nếu thấy danh sách hơi hạn chế, đừng vội nản lòng nhé!
+              </div>
+
+            </div>
 
 
-                <div className="results-grid">
+            {/* =================================================
+                CÓ KẾT QUẢ
+            ================================================== */}
 
-                  {results.map((item, index) => (
+            {results.results?.length > 0 ? (
+
+              <div className="result-list">
+
+                {results.results.map((item, index) => {
+
+                  const product = item.product;
+                  const species = item.species;
+
+                  return (
+
                     <article
-                      className="species-result-card"
-                      key={item.id}
+                      className="result-card"
+                      key={
+                        species?.id || index
+                      }
                     >
 
-                      <div className="result-score">
-                        {Math.round(item.score * 100)}%
+                      {/* RANK */}
 
-                        <span>phù hợp</span>
+                      <div className="result-rank">
+                        #{index + 1}
                       </div>
 
+
+                      {/* IMAGE */}
+
+                      <div className="result-image-wrapper">
+
+                        {product?.image ? (
+
+                          <img
+                            src={product.image}
+                            alt={
+                              product.name ||
+                              species?.name_vn ||
+                              "Sản phẩm"
+                            }
+                            className="result-image"
+                          />
+
+                        ) : (
+
+                          <div className="result-image-placeholder">
+                            Chưa có ảnh
+                          </div>
+
+                        )}
+
+                      </div>
+
+
+                      {/* INFO */}
 
                       <div className="result-info">
 
                         <h3>
-                          {item.name}
+                          {species?.name_vn ||
+                            "Chưa có tên loài"}
                         </h3>
 
-                        <p className="scientific-name">
-                          {item.scientific_name}
-                        </p>
+
+                        {species?.scientific_name && (
+
+                          <p className="scientific-name">
+                            {species.scientific_name}
+                          </p>
+
+                        )}
+
+
+                        {product?.name && (
+
+                          <p className="result-product">
+
+                            <span>
+                              Sản phẩm:
+                            </span>{" "}
+
+                            {product.name}
+
+                          </p>
+
+                        )}
+
+
+                        {product?.price != null && (
+
+                          <p className="result-price">
+
+                            {Number(
+                              product.price
+                            ).toLocaleString("vi-VN")}{" "}
+
+                            VNĐ
+
+                          </p>
+
+                        )}
+
+
+                        {product?.id && (
+
+                          <Link
+                            to={`/products/${product.id}`}
+                            className="result-product-link"
+                          >
+                            Xem sản phẩm
+                          </Link>
+
+                        )}
 
                       </div>
 
 
-                      <Link
-                        to={`/products?species=${item.id}`}
-                        className="result-button"
-                      >
-                        Xem sản phẩm
-                      </Link>
+                      {/* SCORE */}
+
+                      {item.score !== null &&
+                        item.score !== undefined && (
+
+                          <div className="result-score">
+
+                            <strong>
+                              {Math.round(
+                                item.score * 100
+                              )}%
+                            </strong>
+
+                            <span>
+                              phù hợp
+                            </span>
+
+                          </div>
+
+                        )}
 
                     </article>
-                  ))}
 
-                </div>
-              </>
+                  );
+
+                })}
+
+              </div>
+
             ) : (
 
-              /* =====================================
-                 EMPTY RESULT
-              ====================================== */
-              <div className="advisory-empty">
+              /* =================================================
+                 KHÔNG CÓ KẾT QUẢ
+              ================================================== */
 
-                <div className="empty-icon">
-                  🐟
+              <div className="empty-result">
+
+                <div className="empty-result-icon">
+                  ○
                 </div>
 
-                <h2>
+                <h3>
                   Chưa tìm thấy loài cá phù hợp
-                </h2>
+                </h3>
 
                 <p>
-                  Với những điều kiện và các loài cá bạn
-                  đã chọn, hiện tại AquaHome chưa tìm được
-                  lựa chọn phù hợp trong phạm vi dữ liệu
-                  của cửa hàng.
+                  Với những điều kiện hồ cá và yêu cầu bạn
+                  đã cung cấp, hiện chưa có loài cá nào
+                  trong dữ liệu của AquaHome đáp ứng được
+                  các tiêu chí tư vấn.
                 </p>
 
                 <p>
-                  Đừng lo nhé! Bạn có thể thử thay đổi
-                  một vài thông tin tư vấn hoặc khám phá
-                  thêm các sản phẩm hiện có tại AquaHome.
+                  Bạn có thể thử thay đổi một vài tiêu chí
+                  hoặc tham quan cửa hàng để xem thêm các
+                  sản phẩm hiện có.
                 </p>
 
-                <div className="empty-actions">
+                <Link
+                  to="/products"
+                  className="explore-button"
+                >
+                  Tham quan sản phẩm
+                </Link>
 
-                  <button
-                    type="button"
-                    className="retry-button"
-                    onClick={handleRetry}
-                  >
-                    Thử tư vấn lại
-                  </button>
+              </div>
 
-                  <Link
-                    to="/products"
-                    className="shop-button"
-                  >
-                    Khám phá AquaHome
-                  </Link>
+            )}
 
-                </div>
+
+            {/* =================================================
+                REJECTED SPECIES
+            ================================================== */}
+
+            {results.rejected?.length > 0 && (
+
+              <div className="rejected-section">
+
+                <h3>
+                  Một số loài không được đề xuất
+                </h3>
+
+                <p>
+                  Các loài dưới đây không được đề xuất do
+                  có khả năng không tương thích với điều
+                  kiện hồ hoặc cá đang nuôi.
+                </p>
+
+                <ul>
+
+                  {results.rejected.map((item) => (
+
+                    <li key={item.id}>
+
+                      <strong>
+                        {item.name}
+                      </strong>
+
+                      {item.reasons?.length > 0 && (
+
+                        <ul>
+
+                          {item.reasons.map(
+                            (reason, reasonIndex) => (
+
+                              <li key={reasonIndex}>
+                                {reason}
+                              </li>
+
+                            )
+                          )}
+
+                        </ul>
+
+                      )}
+
+                    </li>
+
+                  ))}
+
+                </ul>
+
+              </div>
+
+            )}
+
+
+            {/* =================================================
+                LINK SHOP
+            ================================================== */}
+
+            {results.results?.length > 0 && (
+
+              <div className="results-shop-link">
+
+                <p>
+                  Muốn xem thêm các loài cá và sản phẩm khác?
+                </p>
+
+                <Link
+                  to="/products"
+                  className="explore-button secondary"
+                >
+                  Tham quan cửa hàng
+                </Link>
 
               </div>
 
             )}
 
           </section>
+
         )}
 
-      </div>
-    </main>
+      </main>
+
+      <Footer />
+    </>
   );
 }
 
 export default AdvisoryPage;
-

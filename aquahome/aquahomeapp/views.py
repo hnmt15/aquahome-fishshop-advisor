@@ -87,8 +87,13 @@ class ProductViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Product.objects.all()
         species_id = self.request.query_params.get("species")
+        category_id = self.request.query_params.get("category")
+
         if species_id:
             queryset = queryset.filter(species_id=species_id)
+
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
 
         return queryset
 

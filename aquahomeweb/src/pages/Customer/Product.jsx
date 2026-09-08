@@ -10,47 +10,63 @@ export default function Products() {
   const [categories, setCategories] = useState([]);
 
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("");
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
   const [searchParams] = useSearchParams();
+
   const speciesId = searchParams.get("species");
+  const categoryId = searchParams.get("category");
 
   const navigate = useNavigate();
 
+  // Lấy sản phẩm
   useEffect(() => {
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        setError("");
 
-      const response = await api.get("product/", {
-        params: speciesId
-          ? { species: speciesId }
-          : {},
-      });
+        const params = {};
 
-      console.log("PRODUCT RESPONSE:", response);
-      console.log("PRODUCT DATA:", response.data);
+        if (speciesId) {
+          params.species = speciesId;
+        }
 
-      const data = response.data;
+        if (categoryId) {
+          params.category = categoryId;
+        }
 
-      setProducts(
-        Array.isArray(data) ? data : data.results || []
-      );
-    } catch (err) {
-      console.error("STATUS:", err.response?.status);
-      console.error("DATA:", err.response?.data);
-      console.error("Lỗi lấy sản phẩm:", err);
+        const response = await api.get("product/", {
+          params,
+        });
 
-      setError("Không thể lấy danh sách sản phẩm.");
-    } finally {
-      setLoading(false);
-    }
-  };
+        console.log("PRODUCT RESPONSE:", response);
+        console.log("PRODUCT DATA:", response.data);
 
-  fetchProducts();
-}, [speciesId]);
+        const data = response.data;
+
+        setProducts(
+          Array.isArray(data)
+            ? data
+            : data.results || []
+        );
+      } catch (err) {
+        console.error("STATUS:", err.response?.status);
+        console.error("DATA:", err.response?.data);
+        console.error("Lỗi lấy sản phẩm:", err);
+
+        setError("Không thể lấy danh sách sản phẩm.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [speciesId, categoryId]);
+
+  // Lấy danh mục
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -58,7 +74,9 @@ export default function Products() {
         const data = response.data;
 
         setCategories(
-          Array.isArray(data) ? data : data.results || []
+          Array.isArray(data)
+            ? data
+            : data.results || []
         );
       } catch (err) {
         console.error("Lỗi lấy category:", err);
@@ -68,17 +86,24 @@ export default function Products() {
     fetchCategories();
   }, []);
 
-  const filteredProducts = products.filter((product) => {
-    const matchSearch = product.name
+  // Chỉ tìm kiếm theo tên ở frontend
+  // Category đã được backend xử lý
+  const filteredProducts = products.filter((product) =>
+    product.name
       .toLowerCase()
-      .includes(search.toLowerCase());
+      .includes(search.toLowerCase())
+  );
 
-    const matchCategory =
-      category === "" ||
-      String(product.category) === String(category);
+  // Đổi category thông qua URL
+  const handleCategoryChange = (e) => {
+    const value = e.target.value;
 
-    return matchSearch && matchCategory;
-  });
+    if (value) {
+      navigate(`/products?category=${value}`);
+    } else {
+      navigate("/products");
+    }
+  };
 
   return (
     <div className="customer-page">
@@ -102,12 +127,14 @@ export default function Products() {
             type="text"
             placeholder="Nhập tên sản phẩm cần tìm..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) =>
+              setSearch(e.target.value)
+            }
           />
 
           <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
+            value={categoryId || ""}
+            onChange={handleCategoryChange}
           >
             <option value="">
               Tất cả danh mục
@@ -177,7 +204,9 @@ export default function Products() {
                   <div className="product-bottom">
 
                     <span className="product-price">
-                      {Number(product.price).toLocaleString("vi-VN")}đ
+                      {Number(
+                        product.price
+                      ).toLocaleString("vi-VN")}đ
                     </span>
 
                     <span
@@ -209,6 +238,7 @@ export default function Products() {
               Không tìm thấy sản phẩm phù hợp.
             </div>
           )}
+
       </main>
 
       <Footer />
