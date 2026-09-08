@@ -48,7 +48,6 @@ INSTALLED_APPS = [
     'cloudinary',
 ]
 
-
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
