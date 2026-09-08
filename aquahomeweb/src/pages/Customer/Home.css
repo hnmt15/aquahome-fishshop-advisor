@@ -283,23 +283,23 @@
 
 .product-card {
   background: white;
-
   border-radius: 10px;
-
   overflow: hidden;
 }
 
 .product-image {
   height: 210px;
-
   background: #E8F7F7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
 .product-image img {
   width: 100%;
   height: 100%;
-
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .product-info {
@@ -317,8 +317,7 @@
   font-size: 17px;
   font-weight: bold;
 }
-
-.product-info button {
+.view-all button {
   width: 100%;
 
   padding: 10px;
@@ -332,10 +331,6 @@
   cursor: pointer;
 }
 
-
-/* =========================
-   CONSULTATION
-========================= */
 
 .consultation {
   min-height: 300px;

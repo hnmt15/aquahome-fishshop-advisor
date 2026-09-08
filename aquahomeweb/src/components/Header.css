@@ -123,3 +123,18 @@
 .header-right > a:last-child:hover {
   background: #0B405D;
 }
+
+
+.logout-button {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+.logout-button:hover {
+  opacity: 0.75;
+}
+

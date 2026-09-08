@@ -1,63 +1,77 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import "./Auth.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import api from "../../api/api";
+import { useAuth } from "../../context/AuthContext";
 
 export default function LoginPage() {
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [form, setForm] = useState({
+    username: "",
+    password: "",
+  });
+
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleChange = (e) => {
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
-    };
-
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    const data = new URLSearchParams();
-
-    data.append("username", form.email);
-    data.append("password", form.password);
-    data.append("grant_type", "password");
-    data.append("client_id", "TUdyOoZBo1F4GaiTtCzUlAbWVWd1Rhi8paq2dXSU");
-    data.append("client_secret", "4owb63fCSluxcQTNBCgsGKDQ3cDJcK53dslkZxDvNcHMmlj9y9PfN48UcSNwKx2nW0AUd6sb7FNT2Ahxy4FH4nVpOJNjjmiXWaHji04F0HWkC5NrdB7VCfOT5r5Z9Fho");
-
-
-    try {
-      const response = await api.post("o/token/", {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-    });
-
-      const data = response.data;
-
-      localStorage.setItem("access_token", data.access_token);
-      if (data.refresh_token) {
-        localStorage.setItem("refresh_token", data.refresh_token);
-      }
-
-      navigate("/");
-
-    } catch (error) {
-      console.log(error);
-
-      if (error.response?.data) {
-        setError(
-          error.response.data.error_description ||
-          error.response.data.detail ||
-          "Email hoặc mật khẩu không đúng."
-        );
-      } else {
-        setError("Không thể kết nối đến server.");
-      }
-    }
+    setForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
   };
 
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError("");
+
+  const data = new URLSearchParams();
+
+  data.append("username", form.username);
+  data.append("password", form.password);
+  data.append("grant_type", "password");
+  data.append("client_id","6wWJKQrnfPM8Ij2AokEL5R9vGGAnruGGXadEE4xB");
+  data.append("client_secret","2bSkdnNZLOiz4n5nsmqW76klXrUHV23rExjU6dZmAuMVHEu1S6DLZW1xHWBQfA5CkfJvSNuRtG71TSIwI1ZsPhT3N8bUjT7IWQQb12WQe7jtwp1WCYHcQFwYAwauzwOs");
+
+  try {
+    const response = await api.post("o/token/", data, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+    const { access_token, refresh_token } = response.data;
+
+    const userResponse = await api.get("users/me/", {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+
+    const user = userResponse.data;
+    login(user, access_token);
+
+    if (refresh_token) {
+      localStorage.setItem("refresh_token", refresh_token);
+    }
+
+    navigate("/");
+  } catch (error) {
+    console.error(error);
+
+    if (error.response?.data) {
+      setError(
+        error.response.data.error_description ||
+          error.response.data.detail ||
+          "Tên đăng nhập hoặc mật khẩu không đúng."
+      );
+    } else {
+      setError("Không thể kết nối đến server.");
+    }
+  }
+
+};
 
   return (
     <div className="ah-login">
@@ -67,63 +81,63 @@ export default function LoginPage() {
           <span className="ah-brand-name">quaHome</span>
         </div>
 
+        <div className="ah-surface">
+          <form className="ah-card" onSubmit={handleSubmit} noValidate>
+            <h2>Đăng nhập</h2>
 
-      <div className="ah-surface">
-        <form className="ah-card" onSubmit={handleSubmit} noValidate>
-          <h2>Đăng nhập</h2>
+            <p className="ah-sub">
+                Chưa có tài khoản? <Link to="/register">Đăng ký</Link>
+            </p>
 
-          <p className="ah-sub">
-            Chưa có tài khoản? <a href="/register">Đăng ký</a>
-          </p>
+            {error && <div className="ah-error">{error}</div>}
 
-          {error && <div className="ah-error">{error}</div>}
-
-          <div className="ah-field">
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="ban@vidu.com"
-              value={form.email}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="ah-field">
-            <label htmlFor="password">Mật khẩu</label>
-            <div className="ah-pw-row">
+            <div className="ah-field">
+              <label htmlFor="username">Tên đăng nhập</label>
               <input
-                id="password"
-                name="password"
-                type={showPw ? "text" : "password"}
-                placeholder="Nhập mật khẩu"
-                value={form.password}
+                id="username"
+                name="username"
+                type="text"
+                placeholder="Nhập tên đăng nhập"
+                value={form.username}
                 onChange={handleChange}
                 required
               />
-              <button
-                type="button"
-                className="ah-pw-toggle"
-                onClick={() => setShowPw((s) => !s)}
-              >
-                {showPw ? "Ẩn" : "Hiện"}
-              </button>
             </div>
-          </div>
 
-          <button type="submit" className="ah-submit">
-            Đăng nhập
-          </button>
+            <div className="ah-field">
+              <label htmlFor="password">Mật khẩu</label>
 
+              <div className="ah-pw-row">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPw ? "text" : "password"}
+                  placeholder="Nhập mật khẩu"
+                  value={form.password}
+                  onChange={handleChange}
+                  required
+                />
 
-          <p className="ah-footer-note">
-            Bằng việc đăng nhập, bạn đồng ý với Điều khoản dịch vụ và Chính
-            sách bảo mật của AquaHome.
-          </p>
-        </form>
-      </div>
+                <button
+                  type="button"
+                  className="ah-pw-toggle"
+                  onClick={() => setShowPw((prev) => !prev)}
+                >
+                  {showPw ? "Ẩn" : "Hiện"}
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" className="ah-submit">
+              Đăng nhập
+            </button>
+
+            <p className="ah-footer-note">
+              Bằng việc đăng nhập, bạn đồng ý với Điều khoản dịch vụ và Chính
+              sách bảo mật của AquaHome.
+            </p>
+          </form>
+        </div>
       </div>
     </div>
   );

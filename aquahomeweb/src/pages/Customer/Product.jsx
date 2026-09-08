@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import "./Customer.css";
@@ -14,31 +14,43 @@ export default function Products() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [searchParams] = useSearchParams();
+  const speciesId = searchParams.get("species");
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await api.get("product/");
-        console.log("PRODUCT RESPONSE:", response);
-        console.log("PRODUCT DATA:", response.data);
-        const data = response.data;
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
 
-        setProducts(
-          Array.isArray(data) ? data : data.results || []
-        );
-      } catch (err) {console.error("STATUS:", err.response?.status);
-        console.error("DATA:", err.response?.data);
-        console.error("Lỗi lấy sản phẩm:", err);
-        setError("Không thể lấy danh sách sản phẩm.");
-      } finally {
-        setLoading(false);
-      }
-    };
+      const response = await api.get("product/", {
+        params: speciesId
+          ? { species: speciesId }
+          : {},
+      });
 
-    fetchProducts();
-  }, []);
+      console.log("PRODUCT RESPONSE:", response);
+      console.log("PRODUCT DATA:", response.data);
+
+      const data = response.data;
+
+      setProducts(
+        Array.isArray(data) ? data : data.results || []
+      );
+    } catch (err) {
+      console.error("STATUS:", err.response?.status);
+      console.error("DATA:", err.response?.data);
+      console.error("Lỗi lấy sản phẩm:", err);
+
+      setError("Không thể lấy danh sách sản phẩm.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchProducts();
+}, [speciesId]);
   useEffect(() => {
     const fetchCategories = async () => {
       try {

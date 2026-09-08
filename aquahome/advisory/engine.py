@@ -65,39 +65,7 @@ def recommend(
         customer_preferences=None,
         top_n=5,
 ):
-    """
-    Hàm tổng, chạy toàn bộ 4 bước và trả về kết quả cho API.
 
-    tank_size                : thể tích bể (lít) — KHÔNG suy luận được, để
-                                None nếu khách chưa cung cấp
-    temperature, ph          : để None nếu khách không tự nhập; nếu khách có
-                                cá đang nuôi, engine sẽ tự suy luận thay thế
-    has_plants               : bể có trồng cây hay không
-    existing_species_names   : list[str] scientific_name các loài khách đang
-                                nuôi; None hoặc [] -> bỏ qua Bước 2
-    customer_preferences     : dict sở thích khách hàng cho Bước 3, ví dụ
-                                {"price": 150000, "max_length": 8}
-    top_n                    : số lượng khuyến nghị trả về
-
-    Trả về dict:
-        {
-            "results": [
-                {
-                    "species": Species,
-                    "score": float,
-                    "products": [ProductRecommendation, ...],
-                },
-                ...
-            ],
-            "rejected_tier2": {species_id: [lý do, ...]},  # để debug/giải thích
-            "steps_applied": {
-                "tank_size_filter": bool,   # Bước 1 có áp dụng tank_size không
-                "temperature_filter": bool, # Bước 1 có áp dụng temperature không
-                "ph_filter": bool,          # Bước 1 có áp dụng ph không
-                "tier2": bool,              # Bước 2 có chạy không
-            },
-        }
-    """
     customer_preferences = customer_preferences or {}
 
     # Xác định danh sách cá đang nuôi và xác định điều kiện
@@ -151,9 +119,7 @@ def recommend(
             {
                 "species": species,
                 "score": round(score, 4),
-                # Product được chọn để tính Gower
                 "product": selected_product,
-                # Các sản phẩm liên quan để cross-sell
                 "products": related_products,
             }
         )

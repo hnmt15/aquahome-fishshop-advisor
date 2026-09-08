@@ -31,6 +31,15 @@ class UserViewSet(viewsets.ModelViewSet):
         if user.role == User.RoleChoices.ADMIN:
             return User.objects.all()
         return User.objects.filter(id=user.id)
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset().filter(role=User.RoleChoices.STAFF)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+    def destroy(self, request, *args, **kwargs):
+        user = self.get_object()
+        if user.role != User.RoleChoices.STAFF:
+            return Response({"detail": "Chỉ có thể xóa tài khoản nhân viên."}, status=status.HTTP_403_FORBIDDEN)
+        return super().destroy(request, *args, **kwargs)
 
     @action(methods=["post"],detail=False,url_path="create-staff")
     def create_staff(self, request):
@@ -74,6 +83,14 @@ class ProductViewSet(viewsets.ModelViewSet):
         if self.action == 'retrieve':
             return serializers.ProductDetailSerializer
         return serializers.ProductSerializer
+
+    def get_queryset(self):
+        queryset = Product.objects.all()
+        species_id = self.request.query_params.get("species")
+        if species_id:
+            queryset = queryset.filter(species_id=species_id)
+
+        return queryset
 
     def perform_create(self, serializer):
         serializer.save(is_active=True)

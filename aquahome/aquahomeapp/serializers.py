@@ -11,12 +11,12 @@ class AvatarFullNameMixin:
 class UserSerializer(serializers.ModelSerializer, AvatarFullNameMixin):
     class Meta:
         model = User
-        fields = ['username', 'email', 'phone', 'avatar', 'role', 'is_active']
-        read_only_fields = ['role', 'is_active']
+        fields = ['id','username', 'email', 'phone', 'avatar', 'role', 'is_active']
+        read_only_fields = ['id', 'role', 'is_active']
 class AdminUpdateSerializer(serializers.ModelSerializer, AvatarFullNameMixin):
     class Meta:
         model = User
-        fields = ['username', 'email', 'phone', 'avatar', 'role', 'is_active']
+        fields = ['username', 'email', 'first_name', 'last_name', 'phone', 'avatar', 'is_active']
 class UserRegisterSerializer(serializers.ModelSerializer, AvatarFullNameMixin):
     password = serializers.CharField(write_only=True)
     class Meta:
@@ -66,10 +66,10 @@ class ProductListSerializer(serializers.ModelSerializer):
             data['image'] = instance.image.url
         return data
 class ProductDetailSerializer(ProductListSerializer):
-    category = serializers.CharField(source='category.name', read_only=True)
+    category_name = serializers.CharField(source='category.name', read_only=True)
     class Meta:
         model = Product
-        fields = ProductListSerializer.Meta.fields + ['description']
+        fields = ProductListSerializer.Meta.fields + ['category_name','description', 'species']
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -79,6 +79,11 @@ class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
         fields = ['id', 'product', 'quantity', 'price','product_name', 'product_image']
+
+    def get_product_image(self, obj):
+        if obj.product and obj.product.image:
+            return obj.product.image.url
+        return None
 
 class OrderCreateSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True)
