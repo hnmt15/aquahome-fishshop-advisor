@@ -44,8 +44,7 @@ def check_pair(candidate, existing, candidate_features, existing_features):
     cand_peaceful = PEACEFUL in candidate_features
     exist_peaceful = PEACEFUL in existing_features
 
-#Nhóm 1
-    #Chênh tính cách
+
     if (cand_aggressive and exist_peaceful) or (exist_aggressive and cand_peaceful):
         if size_ratio >= BULLYING_SIZE_RATIO:
             reasons.append(
@@ -53,8 +52,6 @@ def check_pair(candidate, existing, candidate_features, existing_features):
                 f"thước (tỉ lệ ~{size_ratio:.1f} lần) giữa "
                 f"{candidate.name_vn} và {existing.name_vn} dễ dẫn đến bắt nạt/rượt đuổi"
             )
-
-    #Chênh kích thước
     if size_ratio >= PREDATION_SIZE_RATIO:
         reasons.append(
             f"Tỉ lệ kích thước giữa {candidate.name_vn} và {existing.name_vn} vượt "
@@ -62,7 +59,6 @@ def check_pair(candidate, existing, candidate_features, existing_features):
             f"dù cá lớn không thuộc nhóm hung dữ"
         )
 
-#Nhóm 2 (tập tính cắn vây ko nuôi chung với vây dài)
     if (FIN_NIPPER in candidate_features and LONG_FIN in existing_features) or (
             FIN_NIPPER in existing_features and LONG_FIN in candidate_features
     ):
@@ -71,7 +67,6 @@ def check_pair(candidate, existing, candidate_features, existing_features):
             f"tính cắn vây, loài còn lại có vây dài dễ bị tổn thương"
         )
 
-#Nhóm 3:
     if TERRITORIAL in candidate_features and TERRITORIAL in existing_features:
         cand_layer = candidate_features & WATER_LAYERS
         exist_layer = existing_features & WATER_LAYERS
