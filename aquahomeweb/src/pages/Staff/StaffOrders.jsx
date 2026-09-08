@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../api/api";
 import "./StaffOrders.css";
+import Header from "../../components/Header";
+
 
 const STATUS_CONFIG = {
   PENDING: {
@@ -90,6 +92,7 @@ function StaffOrders() {
 
   return (
     <div className="staff-orders-page">
+        <Header />
       <div className="staff-orders-container">
 
         {/* Header */}
@@ -307,7 +310,7 @@ function StaffOrders() {
 
                       <td>
                         <Link
-                          to={`/staff/orders/${order.id}`}
+                          to={`/management/orders/${order.id}`}
                           className="view-order-button"
                         >
                           Chi tiết

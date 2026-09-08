@@ -18,8 +18,12 @@ export default function Orders() {
         const response = await api.get("orders/");
         const data = response.data;
 
+        const orderList = Array.isArray(data)
+          ? data
+          : data.results || [];
+
         setOrders(
-          Array.isArray(data) ? data : data.results || []
+          [...orderList].sort((a, b) => b.id - a.id)
         );
       } catch (err) {
         console.error("Lỗi lấy đơn hàng:", err);
@@ -109,36 +113,40 @@ export default function Orders() {
 
                 <div className="order-products">
                   {order.items?.map((item) => (
-                    <div
-                      className="order-item"
-                      key={item.id}
-                    >
+                    <div className="order-item" key={item.id}>
+
                       <div className="order-product-info">
-                          {item.product_image ? (
-                            <img
-                              src={item.product_image}
-                              alt={item.product_name}
-                            />
-                          ) : (
-                            <div className="no-image">Không có ảnh</div>
-                          )}
+                            {item.product_image ? (
+                              <img
+                                src={item.product_image}
+                                alt={item.product_name}
+                              />
+                            ) : (
+                              <div className="no-image">Không có ảnh</div>
+                            )}
 
-                          <span>{item.product_name}</span>
+                            <span className="order-product-name">
+                              {item.product_name}
+                            </span>
+                          </div>
+
+                          <div className="order-item-quantity">
+                            × {item.quantity}
+                          </div>
+
+                          <div className="order-item-price">
+                            {Number(item.price).toLocaleString("vi-VN")}đ
+                          </div>
+
+                          <div className="order-item-subtotal">
+                            {(
+                              Number(item.price) * Number(item.quantity)
+                            ).toLocaleString("vi-VN")}đ
+                          </div>
+
                         </div>
-
-                      <span>
-                        × {item.quantity}
-                      </span>
-
-                      <strong>
-                        {Number(item.price).toLocaleString(
-                          "vi-VN"
-                        )}
-                        đ
-                      </strong>
+                      ))}
                     </div>
-                  ))}
-                </div>
 
                 <div className="order-total">
                   <span>Tổng tiền</span>

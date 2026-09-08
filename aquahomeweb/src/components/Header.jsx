@@ -38,9 +38,18 @@ export default function Header() {
 
           {user ? (
             <>
+            {user?.role === "CUSTOMER" ? (
+              <Link
+                to="/profile"
+                className="header-username"
+              >
+                {user.username}
+              </Link>
+            ) : (
               <span className="header-username">
                 {user.username}
               </span>
+            )}
 
               <button
                 type="button"

@@ -28,7 +28,7 @@ export default function Cart() {
 
       setCart(newCart);
       localStorage.setItem("cart", JSON.stringify(newCart));
-  };
+    };
 
   const removeItem = (id) => {
     const newCart = cart.filter((item) => item.id !== id);
@@ -69,17 +69,10 @@ export default function Cart() {
         ) : (
 
           <div className="cart-layout">
-
-            {/* Danh sách sản phẩm */}
-
             <section className="cart-items">
-
               {cart.map((item) => (
-
                 <div className="cart-item" key={item.id}>
-
                   <div className="cart-item-image">
-
                     {item.image ? (
                       <img
                         src={item.image}
@@ -91,45 +84,34 @@ export default function Cart() {
 
                   </div>
 
-
                   <div className="cart-item-info">
-
                     <h3>{item.name}</h3>
-
-                    <p>
-                      {Number(item.price).toLocaleString("vi-VN")}đ
+                    <p> {Number(item.price).toLocaleString("vi-VN")}đ
                     </p>
-
-
                     <div className="cart-item-bottom">
+                        <div className="quantity-control">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              updateCart(item.id, item.quantity - 1)
+                            }
+                            disabled={item.quantity <= 1}
+                          >
+                            −
+                          </button>
 
-                      <div className="quantity-control">
+                          <span>{item.quantity}</span>
 
-                        <button
-                          onClick={() =>
-                            updateCart(
-                              item.id,
-                              item.quantity + 1
-                            )
-                          }
-                          disabled={item.quantity >= item.stock}>
-                          +
-                        </button>
-
-                        <span>{item.quantity}</span>
-
-                        <button
-                          onClick={() =>
-                            updateCart(
-                              item.id,
-                              item.quantity + 1
-                            )
-                          }
-                        >
-                          +
-                        </button>
-
-                      </div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              updateCart(item.id, item.quantity + 1)
+                            }
+                            disabled={item.quantity >= item.stock}
+                          >
+                            +
+                          </button>
+                        </div>
 
 
                       <button

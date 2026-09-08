@@ -8,7 +8,7 @@ import "./Customer.css";
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-
+  const [cartMessage, setCartMessage] = useState("");
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -76,6 +76,7 @@ export default function ProductDetail() {
           price: product.price,
           image: product.image,
           quantity: quantity,
+          stock: product.quantity,
         },
       ];
     }
@@ -84,8 +85,11 @@ export default function ProductDetail() {
       "cart",
       JSON.stringify(newCart)
     );
+     setCartMessage("Thêm sản phẩm vào giỏ hàng thành công!");
 
-    navigate("/cart");
+  setTimeout(() => {
+    setCartMessage("");
+  }, 2000);
   };
 
   if (loading) {
@@ -216,7 +220,11 @@ export default function ProductDetail() {
                     </button>
                   </div>
                 </div>
-
+                {cartMessage && (
+                    <div className="cart-success-message">
+                      ✓ {cartMessage}
+                    </div>
+                  )}
                 <button
                   type="button"
                   className="add-cart-button"

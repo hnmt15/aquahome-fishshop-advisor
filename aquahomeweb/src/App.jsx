@@ -9,6 +9,7 @@ import Cart from "./pages/Customer/Cart.jsx";
 import Checkout from "./pages/Customer/Checkout.jsx";
 import Orders from "./pages/Customer/Orders.jsx";
 import OrderDetail from "./pages/Customer/OrderDetail.jsx";
+import Profile from "./pages/Customer/Profile.jsx";
 import Advisory from "./pages/Advisory";
 import StaffOrders from "./pages/Staff/StaffOrders.jsx";
 import StaffOrderDetail from "./pages/Staff/StaffOrderDetail.jsx";
@@ -54,6 +55,10 @@ function App() {
                 <ProtectedRoute allowedRoles={["CUSTOMER"]}>
                     <OrderDetail />
                 </ProtectedRoute>}  />
+            <Route path="/profile" element={
+                <ProtectedRoute allowedRoles={["CUSTOMER"]}>
+                  <Profile />
+                </ProtectedRoute> }/>
 
             <Route path="/advisory" element={<Advisory />} />
 
@@ -70,17 +75,6 @@ function App() {
                 <ProtectedRoute allowedRoles={["ADMIN", "STAFF"]}>
                     <StaffOrderDetail />
                 </ProtectedRoute>} />
-
-
-            <Route path="/management/home" element={
-                <ProtectedRoute allowedRoles={["ADMIN", "STAFF"]}>
-                    <ManagementHome />
-              </ProtectedRoute>} />
-            <Route path="/admin/accounts" element={
-                <ProtectedRoute allowedRoles={"ADMIN"}>
-                    <Accounts />
-              </ProtectedRoute>} />
-
             <Route path="/management/categories" element={
                 <ProtectedRoute allowedRoles={["ADMIN", "STAFF"]}>
                 <Category />
@@ -89,6 +83,14 @@ function App() {
                 <ProtectedRoute allowedRoles={["ADMIN", "STAFF"]}>
                 <Product />
               </ProtectedRoute>} />
+
+
+            <Route path="/admin/accounts" element={
+                <ProtectedRoute allowedRoles={"ADMIN"}>
+                    <Accounts />
+              </ProtectedRoute>} />
+
+
 
           </Routes>
         </BrowserRouter>

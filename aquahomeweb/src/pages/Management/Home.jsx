@@ -11,6 +11,7 @@ export default function ManagementHome() {
   const [user, setUser] = useState(null);
   const [productCount, setProductCount] = useState(0);
   const [categoryCount, setCategoryCount] = useState(0);
+  const [orderCount, setOrderCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -25,28 +26,42 @@ export default function ManagementHome() {
     }
 
     const fetchDashboardData = async () => {
-      try {
-        const [productResponse, categoryResponse] = await Promise.all([
-          api.get("product/"),
-          api.get("category/"),
-        ]);
+  try {
+    const [
+      productResponse,
+      categoryResponse,
+      orderResponse,
+    ] = await Promise.all([
+      api.get("product/"),
+      api.get("category/"),
+      api.get("orders/"),
+    ]);
 
-        const products = Array.isArray(productResponse.data)
-          ? productResponse.data
-          : productResponse.data.results || [];
+    const products = Array.isArray(productResponse.data)
+      ? productResponse.data
+      : productResponse.data.results || [];
 
-        const categories = Array.isArray(categoryResponse.data)
-          ? categoryResponse.data
-          : categoryResponse.data.results || [];
+    const categories = Array.isArray(categoryResponse.data)
+      ? categoryResponse.data
+      : categoryResponse.data.results || [];
 
-        setProductCount(products.length);
-        setCategoryCount(categories.length);
-      } catch (error) {
-        console.error("Lỗi lấy dữ liệu dashboard:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    const orders = Array.isArray(orderResponse.data)
+      ? orderResponse.data
+      : orderResponse.data.results || [];
+
+    setProductCount(products.length);
+    setCategoryCount(categories.length);
+    setOrderCount(orders.length);
+
+  } catch (error) {
+    console.error(
+      "Lỗi lấy dữ liệu dashboard:",
+      error
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
     fetchDashboardData();
   }, []);
@@ -97,11 +112,11 @@ export default function ManagementHome() {
           </div>
 
           <div className="stat-card">
-            <div>
-              <p>Đơn hàng</p>
-              <h2>—</h2>
+              <div>
+                <p>Đơn hàng</p>
+                <h2>{loading ? "..." : orderCount}</h2>
+              </div>
             </div>
-          </div>
 
           {isAdmin && (
             <div className="stat-card">

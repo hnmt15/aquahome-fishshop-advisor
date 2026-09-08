@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api/api";
 import "./Management.css";
+import Header from "../../components/Header";
 
 const emptyForm = {
     name: "",
@@ -144,6 +145,7 @@ export default function Category() {
 
     return (
         <div className="management-page">
+            <Header />
             <div className="management-header">
                 <div>
                     <h1>Quản lý danh mục</h1>

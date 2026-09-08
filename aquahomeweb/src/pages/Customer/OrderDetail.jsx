@@ -5,6 +5,7 @@ import Footer from "../../components/Footer";
 import "./Customer.css";
 import api from "../../api/api";
 
+
 export default function OrderDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -85,73 +86,51 @@ export default function OrderDetail() {
 
       <main className="order-detail-page">
 
-        {/* Header đơn hàng */}
         <div className="order-detail-title">
-
           <button
             className="back-link"
-            onClick={() => navigate("/orders")}
-          >
+            onClick={() => navigate("/orders")} >
             ← Đơn hàng của tôi
           </button>
-
-          <h1>
-            Đơn hàng #{order.id}
-          </h1>
-
-          <span
-            className={`order-status ${order.status}`}
-          >
-            {getStatusText(order.status)}
-          </span>
-
+          <div className="order-title-row">
+            <h1>Đơn hàng #{order.id}</h1>
+            <span
+              className={`order-status ${order.status}`}>
+              {getStatusText(order.status)}
+            </span>
+          </div>
         </div>
 
-        {/* Thông tin nhận hàng */}
         <section className="order-section">
-
           <h2>Thông tin nhận hàng</h2>
-
           <div className="customer-info">
-
             <p>
               <strong>Họ tên:</strong>{" "}
               {order.customer_name}
             </p>
-
             <p>
               <strong>Số điện thoại:</strong>{" "}
               {order.customer_phone}
             </p>
-
             <p>
               <strong>Địa chỉ:</strong>{" "}
               {order.customer_address}
             </p>
-
             {order.notes && (
               <p>
                 <strong>Ghi chú:</strong>{" "}
                 {order.notes}
               </p>
             )}
-
           </div>
-
         </section>
 
-        {/* Danh sách sản phẩm */}
         <section className="order-section">
-
           <h2>Sản phẩm</h2>
-
           {order.items?.map((item) => (
-
             <div
               className="order-detail-item"
-              key={item.id}
-            >
-
+              key={item.id}>
               <div className="order-product-info">
                   {item.product_image ? (
                     <img
@@ -161,20 +140,15 @@ export default function OrderDetail() {
                   ) : (
                     <div className="no-image">Không có ảnh</div>
                   )}
-
                   <span>{item.product_name}</span>
                 </div>
-
               <span>
                 {item.quantity} sản phẩm
               </span>
-
               <strong>
                 {Number(item.price).toLocaleString("vi-VN")}đ
               </strong>
-
             </div>
-
           ))}
 
           <div className="summary-line"></div>

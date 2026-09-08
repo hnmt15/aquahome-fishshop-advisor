@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import api from "../../api/api";
 import "./StaffOrders.css";
+import Header from "../../components/Header";
+
 
 const STATUS_CONFIG = {
   PENDING: {
@@ -37,25 +39,31 @@ function StaffOrderDetail() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    const fetchOrder = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await api.get(`orders/${id}/`);
+
+        console.log("ORDER DETAIL:", response.data);
+
+        setOrder(response.data);
+        setStatus(response.data.status);
+      } catch (err) {
+        console.error("Lỗi lấy chi tiết đơn hàng:", err);
+
+        setError(
+          err.response?.data?.detail ||
+            "Không thể tải thông tin đơn hàng."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchOrder();
   }, [id]);
-
-  const fetchOrder = async () => {
-    try {
-      setLoading(true);
-      setError("");
-
-      const response = await api.get(`orders/${id}/`);
-
-      setOrder(response.data);
-      setStatus(response.data.status);
-    } catch (err) {
-      console.error(err);
-      setError("Không thể tải thông tin đơn hàng.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleStatusUpdate = async () => {
     if (!order || status === order.status) {
@@ -67,16 +75,21 @@ function StaffOrderDetail() {
       setError("");
 
       const response = await api.patch(
-        `/orders/${id}/`,
+        `orders/${id}/`,
         {
           status,
         }
       );
 
-      setOrder(response.data);
-      setStatus(response.data.status);
+      setOrder((prev) => ({
+      ...prev,
+      status: response.data.status,
+    }));
+
+    setStatus(response.data.status);
+
     } catch (err) {
-      console.error(err);
+      console.error("Lỗi cập nhật trạng thái:", err);
 
       setError(
         err.response?.data?.detail ||
@@ -89,8 +102,11 @@ function StaffOrderDetail() {
     }
   };
 
-  const formatPrice = (price) =>
-    Number(price || 0).toLocaleString("vi-VN") + " VNĐ";
+  const formatPrice = (price) => {
+    return (
+      Number(price || 0).toLocaleString("vi-VN") + " VNĐ"
+    );
+  };
 
   const formatDate = (date) => {
     if (!date) return "--";
@@ -126,21 +142,19 @@ function StaffOrderDetail() {
 
   return (
     <div className="order-detail-page">
-
+        <Header />
       <div className="order-detail-container">
 
         {/* Back */}
         <Link
-          to="/staff/orders"
+          to="/management/orders"
           className="back-link"
         >
           ← Quay lại danh sách đơn hàng
         </Link>
 
-
         {/* Header */}
         <div className="detail-header">
-
           <div>
             <span className="page-label">
               ORDER DETAIL
@@ -160,9 +174,7 @@ function StaffOrderDetail() {
           >
             {currentStatus.label}
           </span>
-
         </div>
-
 
         {error && (
           <div className="orders-error">
@@ -170,10 +182,9 @@ function StaffOrderDetail() {
           </div>
         )}
 
-
         <div className="detail-layout">
 
-          {/* LEFT */}
+          {/* ================= LEFT ================= */}
           <div className="detail-main">
 
             {/* Products */}
@@ -190,83 +201,69 @@ function StaffOrderDetail() {
               <div className="order-items">
 
                 {order.items?.map((item) => (
-
                   <div
                     className="order-item"
                     key={item.id}
                   >
 
+                    {/* Image */}
                     <div className="item-image">
-                      {item.product?.image ? (
+                      {item.product_image ? (
                         <img
-                          src={item.product.image}
-                          alt={item.product.name}
+                          src={item.product_image}
+                          alt={item.product_name}
                         />
                       ) : (
                         <span>🐟</span>
                       )}
                     </div>
 
+                    {/* Product info */}
                     <div className="item-info">
-
                       <h3>
-                        {item.product?.name ||
-                          "Sản phẩm"}
+                        {item.product_name || "Sản phẩm"}
                       </h3>
 
                       <p>
                         Số lượng: {item.quantity}
                       </p>
-
                     </div>
 
+                    {/* Price */}
                     <div className="item-price">
-
                       <span>
-                        {formatPrice(item.unit_price)}
+                        {formatPrice(item.price)}
                       </span>
 
                       <strong>
                         {formatPrice(
-                          Number(item.unit_price || 0) *
+                          Number(item.price || 0) *
                             Number(item.quantity || 0)
                         )}
                       </strong>
-
                     </div>
 
                   </div>
-
                 ))}
 
               </div>
 
-
               {/* Total */}
               <div className="order-summary">
-
-                <div>
-                  <span>Tạm tính</span>
-                  <strong>
-                    {formatPrice(order.total_price)}
-                  </strong>
-                </div>
-
                 <div className="total-row">
                   <span>Tổng cộng</span>
+
                   <strong>
-                    {formatPrice(order.total_price)}
+                    {formatPrice(order.total_amount)}
                   </strong>
                 </div>
 
               </div>
 
             </section>
-
           </div>
 
-
-          {/* RIGHT */}
+          {/* ================= RIGHT ================= */}
           <aside className="detail-sidebar">
 
             {/* Customer */}
@@ -279,29 +276,41 @@ function StaffOrderDetail() {
               <div className="customer-detail">
 
                 <strong>
-                  {order.customer?.username ||
-                    order.customer?.name ||
-                    "Khách hàng"}
+                  {order.customer_name || "Khách hàng"}
                 </strong>
 
-                {order.customer?.email && (
+                {order.customer_email && (
                   <p>
-                    {order.customer.email}
+                    {order.customer_email}
                   </p>
                 )}
 
-                {order.customer?.phone && (
+                {order.customer_phone && (
                   <p>
-                    {order.customer.phone}
+                    {order.customer_phone}
                   </p>
                 )}
 
-                {order.shipping_address && (
+                {order.customer_address && (
                   <div className="address-box">
-                    <span>Địa chỉ nhận hàng</span>
+                    <span>
+                      Địa chỉ nhận hàng
+                    </span>
 
                     <p>
-                      {order.shipping_address}
+                      {order.customer_address}
+                    </p>
+                  </div>
+                )}
+
+                {order.notes && (
+                  <div className="address-box">
+                    <span>
+                      Ghi chú
+                    </span>
+
+                    <p>
+                      {order.notes}
                     </p>
                   </div>
                 )}
@@ -309,7 +318,6 @@ function StaffOrderDetail() {
               </div>
 
             </section>
-
 
             {/* Status */}
             <section className="detail-card">
@@ -331,7 +339,6 @@ function StaffOrderDetail() {
                     setStatus(e.target.value)
                   }
                 >
-
                   <option value="PENDING">
                     Chờ xử lý
                   </option>
@@ -351,7 +358,6 @@ function StaffOrderDetail() {
                   <option value="REFUNDED">
                     Đã hoàn tiền
                   </option>
-
                 </select>
 
                 <button
@@ -371,7 +377,6 @@ function StaffOrderDetail() {
 
             </section>
 
-
             {/* Note */}
             <div className="staff-note">
               <strong>Lưu ý</strong>
@@ -385,12 +390,9 @@ function StaffOrderDetail() {
           </aside>
 
         </div>
-
       </div>
-
     </div>
   );
 }
 
 export default StaffOrderDetail;
-

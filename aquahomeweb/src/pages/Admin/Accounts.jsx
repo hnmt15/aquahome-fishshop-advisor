@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api/api";
 import "./Accounts.css";
+import Header from "../../components/Header";
+
 
 export default function Accounts() {
   const [staffs, setStaffs] = useState([]);
@@ -196,7 +198,11 @@ export default function Accounts() {
   });
 
   return (
+   <>
+    <Header />
+
     <div className="accounts-page">
+
       <div className="accounts-header">
         <div>
           <h1>Quản lý nhân viên</h1>
@@ -452,5 +458,6 @@ export default function Accounts() {
         </div>
       )}
     </div>
+    </>
   );
 }

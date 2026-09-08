@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api/api";
 import "./Management.css";
+import Header from "../../components/Header";
 
 const emptyForm = {
     name: "",
@@ -258,6 +259,7 @@ export default function Product() {
 
     return (
         <div className="management-page">
+            import Header from "../../components/Header";
             <div className="management-header">
                 <div>
                     <h1>Quản lý sản phẩm</h1>
