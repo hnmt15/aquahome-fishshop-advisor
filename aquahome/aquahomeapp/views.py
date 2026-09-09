@@ -1,12 +1,13 @@
 from django.shortcuts import render
 from django.db import models
 from aquahomeapp import serializers
-from aquahomeapp.models import Product, Category, User, Order
+from aquahomeapp.models import Product, Category, User, Order, Species
 from rest_framework import viewsets, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
+from rest_framework import generics
 
 from .perms import *
 
@@ -30,6 +31,15 @@ class UserViewSet(viewsets.ModelViewSet):
         if user.role == User.RoleChoices.ADMIN:
             return User.objects.all()
         return User.objects.filter(id=user.id)
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset().filter(role=User.RoleChoices.STAFF)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+    def destroy(self, request, *args, **kwargs):
+        user = self.get_object()
+        if user.role != User.RoleChoices.STAFF:
+            return Response({"detail": "Chỉ có thể xóa tài khoản nhân viên."}, status=status.HTTP_403_FORBIDDEN)
+        return super().destroy(request, *args, **kwargs)
 
     @action(methods=["post"],detail=False,url_path="create-staff")
     def create_staff(self, request):
@@ -73,6 +83,19 @@ class ProductViewSet(viewsets.ModelViewSet):
         if self.action == 'retrieve':
             return serializers.ProductDetailSerializer
         return serializers.ProductSerializer
+
+    def get_queryset(self):
+        queryset = Product.objects.all()
+        species_id = self.request.query_params.get("species")
+        category_id = self.request.query_params.get("category")
+
+        if species_id:
+            queryset = queryset.filter(species_id=species_id)
+
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
+
+        return queryset
 
     def perform_create(self, serializer):
         serializer.save(is_active=True)
@@ -119,5 +142,8 @@ class OrderViewSet(viewsets.ModelViewSet):
         else:
             raise PermissionDenied("Bạn không có quyền chỉnh sửa đơn hàng này.")
 
+class SpeciesViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Species.objects.prefetch_related('features__feature').all()
+    serializer_class = serializers.SpeciesDetailSerializer
 
 

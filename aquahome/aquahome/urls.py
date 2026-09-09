@@ -22,4 +22,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("o/", include(oauth2_urls)),
     path('', include('aquahomeapp.urls')),
+    path("advisory/", include("advisory.urls")),
 ]

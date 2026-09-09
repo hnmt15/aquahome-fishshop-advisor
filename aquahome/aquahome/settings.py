@@ -40,13 +40,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'drf_yasg',
     'aquahomeapp',
+    'advisory',
     'rest_framework',
     'oauth2_provider',
     'corsheaders',
     'cloudinary_storage',
     'cloudinary',
 ]
-
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -58,7 +58,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
+CORS_ALLOW_ALL_ORIGINS = True
 ROOT_URLCONF = 'aquahome.urls'
 
 TEMPLATES = [
@@ -147,7 +147,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 
-CLIENT_ID = 'TUdyOoZBo1F4GaiTtCzUlAbWVWd1Rhi8paq2dXSU'
-CLIENT_SECRET = '4owb63fCSluxcQTNBCgsGKDQ3cDJcK53dslkZxDvNcHMmlj9y9PfN48UcSNwKx2nW0AUd6sb7FNT2Ahxy4FH4nVpOJNjjmiXWaHji04F0HWkC5NrdB7VCfOT5r5Z9Fho'
+CLIENT_ID = '6wWJKQrnfPM8Ij2AokEL5R9vGGAnruGGXadEE4xB'
+CLIENT_SECRET = '2bSkdnNZLOiz4n5nsmqW76klXrUHV23rExjU6dZmAuMVHEu1S6DLZW1xHWBQfA5CkfJvSNuRtG71TSIwI1ZsPhT3N8bUjT7IWQQb12WQe7jtwp1WCYHcQFwYAwauzwOs'
 
-#pbkdf2_sha256$1000000$FiyxLrxZxCqjHR14sh1gzu$RRlz8259+dvtH3dhXGqFfSAEil5ReuU+jY6DBfOw700=

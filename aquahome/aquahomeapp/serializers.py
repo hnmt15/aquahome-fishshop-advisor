@@ -1,4 +1,4 @@
-from .models import User, Category, Product, Order, OrderItem
+from .models import User, Category, Product, Order, OrderItem, Feature, Species, SpeciesFeature
 from rest_framework import serializers
 
 class AvatarFullNameMixin:
@@ -11,17 +11,17 @@ class AvatarFullNameMixin:
 class UserSerializer(serializers.ModelSerializer, AvatarFullNameMixin):
     class Meta:
         model = User
-        fields = ['username', 'email', 'phone', 'avatar', 'role', 'is_active']
-        read_only_fields = ['role', 'is_active']
+        fields = ['id','username', 'email', 'phone', 'avatar', 'role', 'is_active']
+        read_only_fields = ['id', 'role', 'is_active']
 class AdminUpdateSerializer(serializers.ModelSerializer, AvatarFullNameMixin):
     class Meta:
         model = User
-        fields = ['username', 'email', 'phone', 'avatar', 'role', 'is_active']
+        fields = ['username', 'email', 'first_name', 'last_name', 'phone', 'avatar', 'is_active']
 class UserRegisterSerializer(serializers.ModelSerializer, AvatarFullNameMixin):
     password = serializers.CharField(write_only=True)
     class Meta:
         model = User
-        fields = ["username", "email","password", "first_name", "last_name","phone", 'avatar']
+        fields = ["username", "email","password","phone"]
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
 class StaffCreateSerializer(serializers.ModelSerializer, AvatarFullNameMixin):
@@ -39,6 +39,7 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['created_at', 'updated_at']
 
+#admin/staffupdate
 class ProductSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.name', read_only=True)
     category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
@@ -53,10 +54,11 @@ class ProductSerializer(serializers.ModelSerializer):
         if instance.image:
             data['image'] = instance.image.url
         return data
+#view
 class ProductListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ['name', 'price', 'image', 'quantity']
+        fields = ['id','name', 'price', 'image', 'quantity', 'category']
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -64,16 +66,24 @@ class ProductListSerializer(serializers.ModelSerializer):
             data['image'] = instance.image.url
         return data
 class ProductDetailSerializer(ProductListSerializer):
-    category = serializers.CharField(source='category.name', read_only=True)
+    category_name = serializers.CharField(source='category.name', read_only=True)
     class Meta:
         model = Product
-        fields = ProductListSerializer.Meta.fields + ['category','description']
+        fields = ProductListSerializer.Meta.fields + ['category_name','description', 'species']
+
 
 class OrderItemSerializer(serializers.ModelSerializer):
     price = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
+    product_name = serializers.CharField(source="product.name", read_only=True)
+    product_image = serializers.SerializerMethodField()
     class Meta:
         model = OrderItem
-        fields = ['id', 'product', 'quantity', 'price']
+        fields = ['id', 'product', 'quantity', 'price','product_name', 'product_image']
+
+    def get_product_image(self, obj):
+        if obj.product and obj.product.image:
+            return obj.product.image.url
+        return None
 
 class OrderCreateSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True)
@@ -147,6 +157,20 @@ class OrderDetailSerializer(OrderListSerializer):
         model = Order
         fields = OrderListSerializer.Meta.fields + ['customer_name', 'customer_phone', 'customer_address', 'notes', 'created_at', 'updated_at']
 
+class FeatureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Feature
+        fields = ['id', 'name', 'description']
 
+class SpeciesFeatureSerializer(serializers.ModelSerializer):
+    feature = FeatureSerializer(read_only=True)
+    class Meta:
+        model = SpeciesFeature
+        fields = ['feature']
 
+class SpeciesDetailSerializer(serializers.ModelSerializer):
+    species_features = SpeciesFeatureSerializer(source='features', many=True, read_only=True)
+    class Meta:
+        model = Species
+        fields = ['id', 'name_vn', 'features', 'description', 'species_features']
 
