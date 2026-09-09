@@ -32,16 +32,11 @@ class Command(BaseCommand):
     }
 
     CATEGORIES = {
-        "fish": ("Cá",
-                 "Các loài cá cảnh nước ngọt."),
-        "tank": ("Bể cá",
-                 "Bể kính, hồ thủy sinh và bộ set-up đi kèm."),
-        "food": ("Thức ăn",
-                 "Thức ăn cho cá cảnh."),
-        "accessory": ("Phụ kiện",
-                      "Máy lọc, máy sưởi, đèn, máy sục khí và phụ kiện khác."),
-        "plant": ("Cây thủy sinh",
-                  "Cây trồng trong bể, hỗ trợ môi trường sống tự nhiên cho cá."),
+        "fish": ("Cá", "Các loài cá cảnh nước ngọt."),
+        "tank": ("Bể cá", "Bể kính, hồ thủy sinh và bộ set-up đi kèm."),
+        "food": ("Thức ăn", "Thức ăn cho cá cảnh."),
+        "accessory": ("Phụ kiện", "Máy lọc, máy sưởi, đèn, máy sục khí và phụ kiện khác."),
+        "plant": ("Cây thủy sinh", "Cây trồng trong bể, hỗ trợ môi trường sống tự nhiên cho cá."),
     }
 
     category_objs = {}

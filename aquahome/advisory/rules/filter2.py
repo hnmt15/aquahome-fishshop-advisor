@@ -38,61 +38,43 @@ def check_pair(candidate, existing, candidate_features, existing_features):
     big = max(candidate.max_length, existing.max_length)
     small = max(min(candidate.max_length, existing.max_length), 0.1)
     size_ratio = big / small
-
     cand_aggressive = bool(candidate_features & {AGGRESSIVE, SEMI_AGGRESSIVE})
     exist_aggressive = bool(existing_features & {AGGRESSIVE, SEMI_AGGRESSIVE})
     cand_peaceful = PEACEFUL in candidate_features
     exist_peaceful = PEACEFUL in existing_features
-
 
     if (cand_aggressive and exist_peaceful) or (exist_aggressive and cand_peaceful):
         if size_ratio >= BULLYING_SIZE_RATIO:
             reasons.append(
                 f"Chênh lệch tính cách (hung dữ/ôn hòa) kèm chênh lệch kích "
                 f"thước (tỉ lệ ~{size_ratio:.1f} lần) giữa "
-                f"{candidate.name_vn} và {existing.name_vn} dễ dẫn đến bắt nạt/rượt đuổi"
-            )
+                f"{candidate.name_vn} và {existing.name_vn} dễ dẫn đến bắt nạt/rượt đuổi")
     if size_ratio >= PREDATION_SIZE_RATIO:
         reasons.append(
             f"Tỉ lệ kích thước giữa {candidate.name_vn} và {existing.name_vn} vượt "
             f"ngưỡng an toàn (~{size_ratio:.1f} lần) — cá nhỏ có nguy cơ bị ăn "
-            f"dù cá lớn không thuộc nhóm hung dữ"
-        )
-
+            f"dù cá lớn không thuộc nhóm hung dữ")
     if (FIN_NIPPER in candidate_features and LONG_FIN in existing_features) or (
-            FIN_NIPPER in existing_features and LONG_FIN in candidate_features
-    ):
+            FIN_NIPPER in existing_features and LONG_FIN in candidate_features):
         reasons.append(
             f"Một trong hai loài ({candidate.name_vn} / {existing.name_vn}) có tập "
-            f"tính cắn vây, loài còn lại có vây dài dễ bị tổn thương"
-        )
-
+            f"tính cắn vây, loài còn lại có vây dài dễ bị tổn thương")
     if TERRITORIAL in candidate_features and TERRITORIAL in existing_features:
         cand_layer = candidate_features & WATER_LAYERS
         exist_layer = existing_features & WATER_LAYERS
         if cand_layer & exist_layer:
             reasons.append(
                 f"{candidate.name_vn} và {existing.name_vn} đều có tính lãnh thổ và "
-                f"sống cùng tầng nước, dễ tranh chấp không gian"
-            )
+                f"sống cùng tầng nước, dễ tranh chấp không gian")
 
     return (len(reasons) == 0, reasons)
 
 
 def filter_by_compatibility(candidates, existing_species_list):
-    """
-    candidates            : list[Species] — kết quả sau Bước 1
-    existing_species_list : list[Species] — các loài khách đang nuôi
-
-    Trả về (passed, rejected):
-        passed   : list[Species] còn lại sau Bước 2
-        rejected : dict[species_id -> list[str]] lý do bị loại
-    """
     if not existing_species_list:
         return candidates, {}
 
     features_map = get_species_features_bulk(list(candidates) + list(existing_species_list))
-
     passed = []
     rejected = {}
 
@@ -101,15 +83,15 @@ def filter_by_compatibility(candidates, existing_species_list):
         all_reasons = []
 
         for existing in existing_species_list:
-            ok, reasons = check_pair(
-                candidate, existing, candidate_features, features_map[existing.id]
-            )
+            ok, reasons = check_pair(candidate, existing, candidate_features, features_map[existing.id])
             if not ok:
                 all_reasons.extend(reasons)
-
         if all_reasons:
             rejected[candidate.id] = all_reasons
         else:
             passed.append(candidate)
 
     return passed, rejected
+
+
+

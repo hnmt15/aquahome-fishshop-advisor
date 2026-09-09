@@ -50,3 +50,5 @@ def filter_by_environment(tank_size=None, temperature=None, ph=None, has_plants=
         candidates = candidates.exclude(id__in=plant_destroyer_ids)
 
     return list(candidates)
+
+

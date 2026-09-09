@@ -12,59 +12,77 @@ export default function ManagementHome() {
   const [productCount, setProductCount] = useState(0);
   const [categoryCount, setCategoryCount] = useState(0);
   const [orderCount, setOrderCount] = useState(0);
+  const [staffCount, setStaffCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
+useEffect(() => {
+  const storedUser = localStorage.getItem("user");
 
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error("Lỗi đọc thông tin user:", error);
-      }
+  let currentUser = null;
+
+  if (storedUser) {
+    try {
+      currentUser = JSON.parse(storedUser);
+      setUser(currentUser);
+    } catch (error) {
+      console.error("Lỗi đọc thông tin user:", error);
     }
-
-    const fetchDashboardData = async () => {
-  try {
-    const [
-      productResponse,
-      categoryResponse,
-      orderResponse,
-    ] = await Promise.all([
-      api.get("product/"),
-      api.get("category/"),
-      api.get("orders/"),
-    ]);
-
-    const products = Array.isArray(productResponse.data)
-      ? productResponse.data
-      : productResponse.data.results || [];
-
-    const categories = Array.isArray(categoryResponse.data)
-      ? categoryResponse.data
-      : categoryResponse.data.results || [];
-
-    const orders = Array.isArray(orderResponse.data)
-      ? orderResponse.data
-      : orderResponse.data.results || [];
-
-    setProductCount(products.length);
-    setCategoryCount(categories.length);
-    setOrderCount(orders.length);
-
-  } catch (error) {
-    console.error(
-      "Lỗi lấy dữ liệu dashboard:",
-      error
-    );
-  } finally {
-    setLoading(false);
   }
-};
 
-    fetchDashboardData();
-  }, []);
+  const fetchDashboardData = async () => {
+    try {
+      const requests = [
+        api.get("product/"),
+        api.get("category/"),
+        api.get("orders/"),
+      ];
+
+      if (currentUser?.role === "ADMIN") {
+        requests.push(api.get("users/")); // kiểm tra endpoint thực tế
+      }
+
+      const responses = await Promise.all(requests);
+
+      const [productResponse, categoryResponse, orderResponse] = responses;
+
+      const products = Array.isArray(productResponse.data)
+        ? productResponse.data
+        : productResponse.data.results || [];
+
+      const categories = Array.isArray(categoryResponse.data)
+        ? categoryResponse.data
+        : categoryResponse.data.results || [];
+
+      const orders = Array.isArray(orderResponse.data)
+        ? orderResponse.data
+        : orderResponse.data.results || [];
+
+      setProductCount(products.length);
+      setCategoryCount(categories.length);
+      setOrderCount(orders.length);
+
+      if (currentUser?.role === "ADMIN") {
+        const userResponse = responses[3];
+
+        const users = Array.isArray(userResponse.data)
+          ? userResponse.data
+          : userResponse.data.results || [];
+
+        const staffs = users.filter(
+          (user) => user.role === "STAFF"
+        );
+
+        setStaffCount(staffs.length);
+      }
+    } catch (error) {
+      console.error("Lỗi lấy dữ liệu dashboard:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchDashboardData();
+}, []);
 
   const isAdmin = user?.role === "ADMIN";
 
@@ -122,7 +140,7 @@ export default function ManagementHome() {
             <div className="stat-card">
               <div>
                 <p>Nhân viên</p>
-                <h2>—</h2>
+                <h2>{loading ? "..." : staffCount}</h2>
               </div>
             </div>
           )}

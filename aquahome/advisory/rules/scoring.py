@@ -22,24 +22,8 @@ def _categorical_similarity(a, b):
 
     return 1.0 if a == b else 0.0
 
-
 def gower_similarity(customer_profile, species_profile, weights, numeric_ranges):
-    """
-    Tính Weighted Gower Similarity trong [0, 1].
-    customer_profile / species_profile: dict cùng key, ví dụ
-        {"price": 150000, "max_length": 6, "temperament": "Ôn hòa"}
-    weights        : trọng số từng thuộc tính (không bắt buộc tổng = 1)
-    numeric_ranges : range chuẩn hoá cho thuộc tính numeric. Thuộc tính
-                     KHÔNG có trong dict này (như "temperament") được coi
-                     là categorical.
 
-    Thuộc tính mà khách hàng hoặc loài không có giá trị sẽ được bỏ qua
-    khỏi mẫu số và không làm giảm điểm.
-
-    Nếu KHÔNG có thuộc tính nào để so sánh (total_weight = 0), trả về 1.0
-    (trung lập) thay vì 0.0 — 0.0 nghĩa là "hoàn toàn không phù hợp", trong
-    khi đây là "không có dữ liệu để đánh giá", 2 ý nghĩa khác nhau.
-    """
     total_weight = 0.0
     weighted_score = 0.0
 
@@ -186,18 +170,7 @@ def build_species_profile(
     }
 
 
-def rank_candidates(
-    candidates,
-    customer_profile,
-    weights,
-    numeric_ranges,
-    top_n=5
-):
-    """
-    Trả về list[(Species, score, selected_product)]
-    sắp xếp giảm dần theo score.
-    """
-
+def rank_candidates(candidates, customer_profile, weights, numeric_ranges, top_n=5):
     features_map = _get_features_bulk(candidates)
     products_map = _get_products_bulk(candidates)
 
@@ -210,24 +183,17 @@ def rank_candidates(
             features_map=features_map,
             products_map=products_map,
         )
-
         score = gower_similarity(
             customer_profile,
             species_profile,
             weights,
             numeric_ranges,
         )
-
         selected_product = species_profile["product"]
         print("SP:", type(sp), sp)
         print("PRODUCT:", type(selected_product), selected_product)
-        scored.append(
-            (sp, score, selected_product)
-        )
+        scored.append((sp, score, selected_product))
 
-    scored.sort(
-        key=lambda item: item[1],
-        reverse=True
-    )
+    scored.sort(key=lambda item: item[1], reverse=True)
 
     return scored[:top_n]
