@@ -142,6 +142,19 @@ class OrderViewSet(viewsets.ModelViewSet):
         else:
             raise PermissionDenied("Bạn không có quyền chỉnh sửa đơn hàng này.")
 
+    @action(detail=True, methods=['post'])
+    def cancel(self, request, pk=None):
+        order = self.get_object()
+        if order.customer != request.user:
+            raise PermissionDenied("Bạn không có quyền hủy đơn hàng này.")
+        serializer = serializers.OrderCustomerUpdateSerializer(
+            order,
+            data={'status': Order.StatusChoices.CANCELLED},
+            partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializers.OrderDetailSerializer(order).data, status=status.HTTP_200_OK)
+
 class SpeciesViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Species.objects.prefetch_related('features__feature').all()
     serializer_class = serializers.SpeciesDetailSerializer
