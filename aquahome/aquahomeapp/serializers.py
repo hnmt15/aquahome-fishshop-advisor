@@ -1,6 +1,7 @@
 from .models import User, Category, Product, Order, OrderItem, Feature, Species, SpeciesFeature
 from rest_framework import serializers
 
+
 class AvatarFullNameMixin:
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -120,6 +121,23 @@ class OrderUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ['customer_name', 'customer_phone', 'customer_address', 'notes']
+
+class OrderCustomerUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ['status']
+
+    def validate_status(self, new_status):
+        order = self.instance
+        current_status = order.status
+
+        if current_status != Order.StatusChoices.PENDING:
+            raise serializers.ValidationError("Đơn hàng đã được cửa hàng xử lý. Không thể hủy.")
+
+        if new_status != Order.StatusChoices.CANCELLED:
+            raise serializers.ValidationError("Khách hàng chỉ có thể hủy đơn hàng.")
+
+        return new_status
 
 #Cho Admin/Staff cập nhật
 class OrderStatusUpdateSerializer(serializers.ModelSerializer):
