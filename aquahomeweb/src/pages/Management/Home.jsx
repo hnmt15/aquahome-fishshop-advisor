@@ -90,7 +90,7 @@ useEffect(() => {
     <>
       <Header />
 
-      <div className="management-home">
+      <div className="management-page management-home">
 
         {/* HEADER DASHBOARD */}
         <div className="dashboard-header">

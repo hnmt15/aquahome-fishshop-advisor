@@ -33,10 +33,12 @@ function App() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/" element={
-                <ProtectedRoute allowedRoles={["CUSTOMER"]}>
-                    <HomePage />
+                <ProtectedRoute
+                  allowedRoles={["CUSTOMER"]}
+                  publicForUnauthenticated={true}
+                >
+                <HomePage />
                 </ProtectedRoute>} />
-
             <Route path="/products" element={<Products />} />
             <Route path="/products/:id" element={<ProductDetail />} />
             <Route path="/cart" element={
@@ -89,8 +91,6 @@ function App() {
                 <ProtectedRoute allowedRoles={"ADMIN"}>
                     <Accounts />
               </ProtectedRoute>} />
-
-
 
           </Routes>
         </BrowserRouter>

@@ -144,8 +144,9 @@ export default function Category() {
     });
 
     return (
+        <>
+        <Header />
         <div className="management-page">
-            <Header />
             <div className="management-header">
                 <div>
                     <h1>Quản lý danh mục</h1>
@@ -328,5 +329,6 @@ export default function Category() {
                 </div>
             )}
         </div>
+        </>
     );
 }

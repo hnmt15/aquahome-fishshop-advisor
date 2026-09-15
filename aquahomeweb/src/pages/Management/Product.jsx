@@ -258,8 +258,10 @@ export default function Product() {
     };
 
     return (
+        <>
+        <Header />
+
         <div className="management-page">
-            import Header from "../../components/Header";
             <div className="management-header">
                 <div>
                     <h1>Quản lý sản phẩm</h1>
@@ -607,5 +609,7 @@ export default function Product() {
                 </div>
             )}
         </div>
+        </>
     );
+
 }

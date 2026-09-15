@@ -91,11 +91,12 @@ function StaffOrders() {
   };
 
   return (
+      <>
+      <Header />
     <div className="staff-orders-page">
-        <Header />
+
       <div className="staff-orders-container">
 
-        {/* Header */}
         <div className="page-header">
           <div>
             <span className="page-label">
@@ -329,6 +330,7 @@ function StaffOrders() {
 
       </div>
     </div>
+    </>
   );
 }
 
