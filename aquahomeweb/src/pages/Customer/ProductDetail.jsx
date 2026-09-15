@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import api from "../../api/api"
@@ -7,6 +8,7 @@ import "./Customer.css";
 
 export default function ProductDetail() {
   const { id } = useParams();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [cartMessage, setCartMessage] = useState("");
   const [product, setProduct] = useState(null);
@@ -49,6 +51,16 @@ export default function ProductDetail() {
 
   // Thêm vào giỏ hàng
   const handleAddToCart = () => {
+    if (!user) {
+        alert("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.");
+        navigate("/login");
+        return;
+      }
+
+      if (user.role !== "CUSTOMER") {
+        alert("Chỉ khách hàng mới có thể thêm sản phẩm vào giỏ hàng.");
+        return;
+  }
     const oldCart =
       JSON.parse(localStorage.getItem("cart")) || [];
 
@@ -63,7 +75,10 @@ export default function ProductDetail() {
         item.id === product.id
           ? {
               ...item,
-              quantity: item.quantity + quantity,
+              quantity: Math.min(
+              item.quantity + quantity,
+              item.stock
+            )
             }
           : item
       );
