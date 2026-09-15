@@ -55,8 +55,12 @@ export default function LoginPage() {
     if (refresh_token) {
       localStorage.setItem("refresh_token", refresh_token);
     }
+    if (user.role === "ADMIN" || user.role === "STAFF") {
+      navigate("/management/home");
+    } else {
+      navigate("/");
+    }
 
-    navigate("/");
   } catch (error) {
     console.error(error);
 

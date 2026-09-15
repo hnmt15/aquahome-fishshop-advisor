@@ -59,7 +59,17 @@ def get_product_recommendations(species_list, limit=5):
 
     return grouped
 
+def get_main_products(species_list):
+    species_ids = [sp.id for sp in species_list]
+    products = ( Product.objects.filter(
+            species_id__in=species_ids,
+            quantity__gt=0
+        ).order_by("species_id", "id"))
+    grouped = defaultdict(list)
+    for product in products:
+        grouped[product.species_id].append(product)
 
+    return grouped
 def recommend(
         tank_size=None,
         temperature=None,
@@ -91,13 +101,15 @@ def recommend(
     tier1_candidates = filter_by_environment(tank_size, temperature, ph, has_plants)
     species_name_map = {sp.id: sp.name_vn for sp in tier1_candidates}
 
+
     # Bước 2
     candidates, rejected_tier2 = filter_by_compatibility(tier1_candidates, existing_species)
     rejected_details = [
         {"id": species_id, "name": species_name_map.get(species_id), "reasons": reasons}
         for species_id, reasons in rejected_tier2.items()
     ]
-    #Bước 3
+    # Bước 3
+    main_products = get_main_products(candidates)
     numeric_ranges = get_numeric_ranges()
     has_preferences = bool(customer_preferences)
 
@@ -111,40 +123,24 @@ def recommend(
         )
     else:
         ranked = []
-        products_map = get_product_recommendations(candidates)
-        for species in candidates[:top_n]:
-            related_products = products_map.get(species.id, [])
 
-            selected_product = (
-                related_products[0].product
-                if related_products
-                else None
-            )
+        for species in candidates[:top_n]:
+            products = main_products.get(species.id, [])
+            selected_product = products[0] if products else None
+
             ranked.append(
                 (species, None, selected_product)
             )
+
     # Bước 4
     results = []
-
     for species, score, selected_product in ranked:
-        results.append({
-            "species": {
-                "id": species.id,
-                "name_vn": species.name_vn,
-                "scientific_name": species.scientific_name,
-            },
-            "product": {
-                "id": selected_product.id,
-                "name": selected_product.name,
-                "price": float(selected_product.price),
-                "image": (
-                    selected_product.image.url
-                    if selected_product.image
-                    else None
-                ),
-            } if selected_product else None,
-            "score": round(score, 4) if score is not None else None,
-        })
+        results.append(
+            {"species": {"id": species.id, "name_vn": species.name_vn, "scientific_name": species.scientific_name, },
+             "product": {"id": selected_product.id, "name": selected_product.name,
+                         "price": float(selected_product.price), "image": (
+                     selected_product.image.url if selected_product.image else None), } if selected_product else None,
+             "score": round(score, 4) if score is not None else None, })
     return {
         "results": results,
         "rejected": rejected_details,
