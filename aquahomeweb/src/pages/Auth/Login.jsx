@@ -32,8 +32,7 @@ export default function LoginPage() {
   data.append("username", form.username);
   data.append("password", form.password);
   data.append("grant_type", "password");
-  data.append("client_id","6wWJKQrnfPM8Ij2AokEL5R9vGGAnruGGXadEE4xB");
-  data.append("client_secret","2bSkdnNZLOiz4n5nsmqW76klXrUHV23rExjU6dZmAuMVHEu1S6DLZW1xHWBQfA5CkfJvSNuRtG71TSIwI1ZsPhT3N8bUjT7IWQQb12WQe7jtwp1WCYHcQFwYAwauzwOs");
+  data.append("client_id", import.meta.env.VITE_CLIENT_ID);
 
   try {
     const response = await api.post("o/token/", data, {
